@@ -6,6 +6,7 @@
 ![Hardware](https://img.shields.io/badge/hardware-open-blue?style=plastic) 
 ![MCU](https://img.shields.io/badge/MCU-CH32V006-green?style=plastic)
 
+<img src="images/PCB-3D-TOP.png" width="15%"> <img src="images/IRL-ON.jpg" width="15%"> <img src="images/IRL-BK.jpg" width="15%">
 
 ---
 
