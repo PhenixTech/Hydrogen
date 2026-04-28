@@ -108,11 +108,12 @@ Designed in **EasyEDA**, fabricated by **JLCPCB**, components sourced from **Ali
 - Compact form factor for keychain use
 - Two-board stack: main board + OLED module daughter board
 
+<img src="images/PCB-TOP.png" width="15%"> <img src="images/PCB-BOTTOM.jpg" width="15%"> <img src="images/Schematic_Hydrogen-1_2026-04-07.png" width="15%">
 ---
 
 ## Enclosure (planned)
 
-A two- or three-part enclosure is in design:
+A two or three-part enclosure is in design:
 
 - **Back shell** — resin cast
 - **Front plate** — plastic with OLED window and LED cutout
