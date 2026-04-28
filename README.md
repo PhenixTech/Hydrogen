@@ -1,7 +1,7 @@
 # Hydrogen V1
 
 > *A CR2032-powered keychain clock — minimalist, open hardware, built to last.*
-
+![Hardware](https://img.shields.io/badge/hardware-open-blue?style=flat-square) ![MCU](https://img.shields.io/badge/MCU-CH32V006-green?style=flat-square) ![RTC](https://img.shields.io/badge/RTC-PCF8563T-orange?style=flat-square) ![Power](https://img.shields.io/badge/battery-CR2032-red?style=flat-square) ![Battery Life](https://img.shields.io/badge/battery%20life-~16%20months-brightgreen?style=flat-square) ![Status](https://img.shields.io/badge/status-v1%20ordered-blueviolet?style=flat-square) ---
 ---
 
 ## Overview
