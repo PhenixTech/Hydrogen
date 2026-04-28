@@ -5,6 +5,9 @@
 
 ![Hardware](https://img.shields.io/badge/hardware-open-blue?style=plastic) 
 ![MCU](https://img.shields.io/badge/MCU-CH32V006-green?style=plastic)
+![Architecture](https://img.shields.io/badge/RISC--V-RV32EC-red?style=plastic)
+![Battery Life](https://img.shields.io/badge/battery%20life-~12%20months-brightgreen?style=plastic)
+
 
 <img src="images/PCB-3D-TOP.png" width="15%"> <img src="images/IRL-ON.jpg" width="15%"> <img src="images/IRL-BK.jpg" width="15%">
 
@@ -12,6 +15,8 @@
 
 
 ## Overview
+
+![BANNER](images/BANNER.png)
 
 **Hydrogen V1** is a coin-cell (CR2032) powered keychain clock designed around aggressive power optimization and a minimal BOM. It wakes on button press, displays the time on an SSD1306 OLED for 5 seconds, then returns to deep sleep — targeting a **~12-month battery life** on a single CR2032.
 
