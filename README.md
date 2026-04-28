@@ -61,6 +61,8 @@ CR2032
 - **22µF holdover cap** — keeps the RTC alive for ~20 seconds during a battery swap, preserving time.
 - **Debug interface** — three  pads (SWIO, GND, RST) with a 2.54mm pitch for WCH-LinkE programming.
 
+<img src="images/Schematic_Hydrogen-1_2026-04-07.png" width="50%">
+
 ---
 
 ## Firmware
@@ -108,7 +110,8 @@ Designed in **EasyEDA**, fabricated by **JLCPCB**, components sourced from **Ali
 - Compact form factor for keychain use
 - Two-board stack: main board + OLED module daughter board
 
-<img src="images/PCB-TOP.png" width="15%"> <img src="images/PCB-BOTTOM.jpg" width="15%"> <img src="images/Schematic_Hydrogen-1_2026-04-07.png" width="15%">
+<img src="images/PCB-TOP.png" width="15%"> <img src="images/PCB-BOTTOM.png" width="15%"> 
+
 ---
 
 ## Enclosure (planned)
