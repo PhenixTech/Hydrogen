@@ -1,0 +1,129 @@
+# Hydrogen V1
+
+> *A CR2032-powered keychain clock — minimalist, open hardware, built to last.*
+
+---
+
+## Overview
+
+**Hydrogen V1** is a coin-cell (CR2032) powered keychain clock designed around aggressive power optimization and a minimal BOM. It wakes on button press, displays the time on an SSD1306 OLED for 5 seconds, then returns to deep sleep — targeting a **~12-month battery life** on a single CR2032.
+
+This is the first device in the **Hydrogen** line, part of the broader [PhenixTech](https://phenixtech.fr) hardware project ecosystem.
+
+---
+
+## Hardware
+
+### Block Diagram
+
+```
+CR2032
+  │
+  ├──[BAT54 Schottky]──► VBAT
+  │        │
+  │        └── [22µF holdover cap]──► PCF8563T VBAT 
+  │                                  
+  ├──► CH32V006 (TSSOP20)
+  │       │
+  │       ├── I²C ──► PCF8563T RTC
+  │       ├── I²C ──► SSD1306 OLED (daughter board)
+  │       ├── GPIO ──► LED (3kΩ, ~1mA, low-battery indicator)
+  │       └── SWIO/RST pads (debug header)
+  │
+  └──► 3215 32.768kHz crystal (RTC clock source)
+```
+
+### Bill of Materials (core)
+
+| Component | Part | Package | Unit Cost |
+|---|---|---|---|
+| MCU | CH32V006F8P6 | TSSOP20 | ~€0.165 |
+| RTC | PCF8563T | SOP8 | ~€0.155 |
+| Crystal | 32.768kHz SMD | 3215 | ~€0.10 |
+| Schottky | BAT54 | SOD-323 | ~€0.012 |
+| Holdover cap | 22µF | 00603 | ~€0.001 |
+| LED | Red, 0603 | 0603 | ~€0.007 |
+| **Total (timing/control)** | | | **~€0.44** |
+
+*Display module (SSD1306 0.96" I²C) sourced separately. (about 0.50€ each)*
+
+### Key Design Decisions
+
+- **Two-PCB approach** — main board + SSD1306 module daughter board with a 4 pin headers. V2 will integrate a bare OLED panel on a single PCB.
+- **BAT54 Schottky** — keeps the RTC domain isolated for the holdover cap.
+- **22µF holdover cap** — keeps the RTC alive for ~20 seconds during a battery swap, preserving time.
+- **Debug interface** — three  pads (SWIO, GND, RST) with a 2.54mm spacing for WCH-LinkE programming.
+
+---
+
+## Firmware
+
+> Developed with the CH32V SDK / MounRiver Studio II
+
+### Behavior
+
+```
+[Power on / button press]
+        │
+        ▼
+  Wake from deep sleep
+        │
+        ▼
+  Read time via I²C (PCF8563T)
+        │
+        ▼
+  Display on SSD1306 (5 seconds)
+        │
+        │
+        │
+        ▼
+  Return to deep sleep
+```
+
+### Power Budget (estimated)
+
+| State | Current | Duration |
+|---|---|---|
+| Deep sleep (MCU + RTC) | ~50µA | ~90% of time |
+| Active (OLED on, MCU running) | ~10mA | 5s per wake |
+| LED flash (low-battery) | ~1mA | brief pulse |
+
+*Estimated battery life: **~12 months** on a standard CR2032 (225mAh).*
+
+---
+
+## PCB
+
+Designed in **EasyEDA**, fabricated by **JLCPCB**, components sourced from **Aliexpress**.
+
+- 2-layer PCB, 1.6mm thickness
+- SMD components on top side; CR2032 holder on bottom
+- Compact form factor for keychain use
+- Two-board stack: main board + OLED module daughter board
+
+---
+
+## Enclosure (planned)
+
+A two- or three-part enclosure is in design:
+
+- **Back shell** — resin cast
+- **Front plate** — plastic with OLED window and LED cutout
+- **Optional** — magnetic swappable faceplate system
+
+---
+
+## Roadmap
+
+| Version | Status | Key Changes |
+|---|---|---|
+| **V1** | ✅ PCB ordered | Two-board stack, SSD1306 module |
+| **V2** | 🔲 Planning | Single PCB, bare OLED via FPC, MOSFET power gating, reverse polarity protection, optimized layout |
+
+---
+
+## Project Naming
+
+Hydrogen is part of my own hardware ecosystem, where projects are named after elements and subatomic particles:
+
+- **Boron** — main handheld line (RP2350, ST7789 display)
