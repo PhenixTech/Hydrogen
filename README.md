@@ -44,13 +44,13 @@ CR2032
 
 | Component | Part | Package | Unit Cost |
 |---|---|---|---|
-| MCU | CH32V006F8P6 | TSSOP20 | ~€0.165 |
-| RTC | PCF8563T | SOP8 | ~€0.155 |
-| Crystal | 32.768kHz SMD | 3215 | ~€0.10 |
-| Schottky | BAT54 | SOD-323 | ~€0.012 |
-| Holdover cap | 22µF | 0603 | ~€0.001 |
-| LED | Red, 0603 | 0603 | ~€0.007 |
-| **Total (timing/control)** | | | **~€0.44** |
+| MCU | CH32V006F8P6 | TSSOP20 | €0.165 |
+| RTC | PCF8563 | SOP8 | €0.155 |
+| Crystal | 32.768kHz SMD | 3215 | €0.10 |
+| Schottky | BAT54 | SOD-23 | €0.012 |
+| LED | Red, 0603 | 0603 | €0.007 |
+| Nav | 3-way thumbwheel | SMD | €0.057 |
+| **Total (timing/control)** | | | **~€0.50** |
 
 *Display module (SSD1306 0.96" I²C) sourced separately. (about 0.50€ each)*
 
@@ -59,7 +59,7 @@ CR2032
 - **Two-PCB approach** — main board + SSD1306 module daughter board with a 4 pin headers. V2 will integrate a bare OLED panel on a single PCB.
 - **BAT54 Schottky** — keeps the RTC domain isolated for the holdover cap.
 - **22µF holdover cap** — keeps the RTC alive for ~20 seconds during a battery swap, preserving time.
-- **Debug interface** — three  pads (SWIO, GND, RST) with a 2.54mm spacing for WCH-LinkE programming.
+- **Debug interface** — three  pads (SWIO, GND, RST) with a 2.54mm pitch for WCH-LinkE programming.
 
 ---
 
