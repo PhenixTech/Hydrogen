@@ -1,6 +1,6 @@
 # Hydrogen V1
 
-> *A CR2032-powered keychain clock — minimalist, open hardware, built to last.*
+> *A CR2032-powered keychain clock, minimalist, open hardware, and built to last.*
 
 
 ![Hardware](https://img.shields.io/badge/hardware-open-blue?style=plastic) 
@@ -124,7 +124,7 @@ A two- or three-part enclosure is in design:
 
 | Version | Status | Key Changes |
 |---|---|---|
-| **V1** | ✅ PCB ordered | Two-board stack, SSD1306 module |
+| **V1** | ✅ | Two-board stack, SSD1306 module |
 | **V2** | 🔲 Planning | Single PCB, bare OLED via FPC, MOSFET power gating, reverse polarity protection, optimized layout |
 
 ---
@@ -134,3 +134,5 @@ A two- or three-part enclosure is in design:
 Hydrogen is part of my own hardware ecosystem, where projects are named after elements and subatomic particles:
 
 - **Boron** — main handheld line (RP2350, ST7789 display)
+
+---
