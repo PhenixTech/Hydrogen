@@ -41,7 +41,7 @@ CR2032
 | RTC | PCF8563T | SOP8 | ~€0.155 |
 | Crystal | 32.768kHz SMD | 3215 | ~€0.10 |
 | Schottky | BAT54 | SOD-323 | ~€0.012 |
-| Holdover cap | 22µF | 00603 | ~€0.001 |
+| Holdover cap | 22µF | 0603 | ~€0.001 |
 | LED | Red, 0603 | 0603 | ~€0.007 |
 | **Total (timing/control)** | | | **~€0.44** |
 
