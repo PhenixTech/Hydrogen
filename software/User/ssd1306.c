@@ -22,12 +22,13 @@ uint8_t SSD1306_Init(void)
 
 void SSD1306_Clear(void)
 {
-    for (uint8_t page = 0; page < 4; page++) {
-        SSD1306_Cmd(0xB0 + page);
-        SSD1306_Cmd(0x00); SSD1306_Cmd(0x10);
-        for (uint8_t col = 0; col < 128; col++)
-            SSD1306_Data(0x00);
-    }
+    // Set column address 0..127
+    SSD1306_Cmd(0x21); SSD1306_Cmd(0x00); SSD1306_Cmd(0x7F);
+    // Set page address 0..3
+    SSD1306_Cmd(0x22); SSD1306_Cmd(0x00); SSD1306_Cmd(0x03);
+    // Flood entire GRAM (128 * 4 pages = 512 bytes)
+    for (uint16_t i = 0; i < 128 * 4; i++)
+        SSD1306_Data(0x00);
 }
 
 void SSD1306_On(void)  { SSD1306_Cmd(0xAF); }

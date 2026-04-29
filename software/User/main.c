@@ -10,6 +10,7 @@
 #define BTN_DN    GPIO_Pin_4  // PD4
 #define BTN_CLK   GPIO_Pin_6  // PD6
 
+#define ID 
 #define PCF8563_ADDR  0x51
 
 #define DISPLAY_ON_MS  3000  // display stays on 3s (but it dont)
@@ -17,10 +18,10 @@
 
 typedef struct { uint16_t on; uint16_t off; uint8_t count; } Pattern;
 // static const Pattern PAT_NOT_FOUND = { 800, 800, 1 };
-// static const Pattern PAT_INIT_FAIL = { 100, 100, 2 };
+static const Pattern PAT_INIT_FAIL = { 100, 100, 2 };
 static const Pattern PAT_OK        = {  80,  80, 1 };
 
-uint8_t devmode = 0;
+uint8_t devmode = 1;
 
 // ©¤©¤ LED ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
 static void LED_Init(void)
@@ -243,7 +244,10 @@ static void Draw_Inputs(void)
     SSD1306_Cmd(0x00); SSD1306_Cmd(0x10);
     for (uint8_t i = 0; i < 128; i++) SSD1306_Data(0x00);
 
-    if (Btn_Pressed(BTN_UP))  SSD1306_Print(3,  0, "UP");
+    if (Btn_Pressed(BTN_UP))  {
+        Blink(&PAT_OK);
+        SSD1306_Print(3,  0, "UP");
+    }
     if (Btn_Pressed(BTN_DN)) {
     SSD1306_Print(3, 50, "DN");
     devmode = 0;
@@ -267,21 +271,22 @@ int main(void)
     EXTI_Wake_Init();
     Delay_Ms(300);
     I2C_Init_Bus();
+    SSD1306_Clear();
 
     uint8_t rtc_ok  = (PCF8563_Init() == 0);
     uint8_t oled_ok = (SSD1306_Init() == 0);
 
     // VL flag check, reset if set
-    uint8_t sec_reg = 0;
-    if (I2C_ReadReg(PCF8563_ADDR, 0x02, &sec_reg) == 0 && (sec_reg & 0x80))
-        NVIC_SystemReset();
+    // uint8_t sec_reg = 0;
+    // if (I2C_ReadReg(PCF8563_ADDR, 0x02, &sec_reg) == 0 && (sec_reg & 0x80))
+    //    NVIC_SystemReset();
 
     // Seed time comment out after first flash
-    // if (rtc_ok) {
-    //     RTC_Time set = { .sec=0, .min=19, .hour=1, .day=27, .month=4, .year=2026 };
-    //     PCF8563_SetTime(&set);
-    // }
-
+    /* if (rtc_ok) {
+         RTC_Time set = { .sec=0, .min=37, .hour=18, .day=29, .month=4, .year=2026 };
+         PCF8563_SetTime(&set);
+     }
+    */
     if (!rtc_ok && oled_ok) {
         SSD1306_Clear();
         SSD1306_Print(1, 20, "RTC ERROR");
@@ -296,6 +301,7 @@ int main(void)
 
     // Cold boot show display immediately without requiring hold
     if (oled_ok) {
+        Delay_Ms(500);
         SSD1306_Clear();
         SSD1306_On();
         if (rtc_ok) {
@@ -307,6 +313,9 @@ int main(void)
         Blink(&PAT_OK);
     }
 
+if (!oled_ok) {
+    Blink(&PAT_INIT_FAIL);
+}
     while (1) {
         tick += 50;
         Delay_Ms(50);
