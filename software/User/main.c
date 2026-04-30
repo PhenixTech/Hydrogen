@@ -15,8 +15,8 @@
 #define ID 
 #define PCF8563_ADDR  0x51
 
-#define DISPLAY_ON_MS  3000  // display stays on 3s (but it dont)
-#define HOLD_MS         50   // min hold to wake display (not really 50ms)
+#define DISPLAY_ON_MS  3000  // display stays on 3s 
+#define HOLD_MS         50   // min hold to wake display 
 
 typedef struct { uint16_t on; uint16_t off; uint8_t count; } Pattern;
 // static const Pattern PAT_NOT_FOUND = { 800, 800, 1 };
@@ -433,13 +433,25 @@ menu_rtc = 1;
                         Delay_Ms(50);
                         SSD1306_Print(2, 44, "  ");
                         break;
+                    case 2: 
+                        new_date = new_date - 1;
+                        Delay_Ms(50);
+                        SSD1306_Print(2, 20, "  ");
+                        break;
+                    case 3 :
+                        new_month = new_month - 1;
+                        Delay_Ms(150);
+                        SSD1306_Print(2, 44, "  ");
+                        break;
+                    case 4 :
+                        new_year = new_year - 1;
+                        Delay_Ms(200);
+                        SSD1306_Print(2, 60, "    ");
+                        break;
                     }
+                }
         }
     }
-    while(menu_date) {
-        
-    }
-}
 
 
 static void showMenu(void)
