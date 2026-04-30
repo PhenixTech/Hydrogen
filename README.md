@@ -9,7 +9,7 @@
 ![Battery Life](https://img.shields.io/badge/battery%20life-~12%20months-brightgreen?style=plastic)
 
 
-<img src="images/PCB-3D-TOP.png" width="15%"> <img src="images/IRL-ON.jpg" width="15%"> <img src="images/IRL-BK.jpg" width="15%">
+<img src="images/PCB-3D-TOP.png" width="25%"> <img src="images/IRL-ON.jpg" width="25%"> <img src="images/IRL-BK.jpg" width="25%">
 
 ---
 
@@ -115,7 +115,7 @@ Designed in **EasyEDA**, fabricated by **JLCPCB**, components sourced from **Ali
 - Compact form factor for keychain use
 - Two-board stack: main board + OLED module daughter board
 
-<img src="images/PCB-TOP.png" width="15%"> <img src="images/PCB-BOTTOM.png" width="15%"> 
+<img src="images/PCB-TOP.png" width="25%"> <img src="images/PCB-BOTTOM.png" width="25%"> 
 
 ---
 
