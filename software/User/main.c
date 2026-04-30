@@ -2,6 +2,8 @@
 #include "debug.h"
 #include "ssd1306.h"
 #include "i2c.h"
+#include "bitmap.h"
+#include <stdbool.h>
 
 // ©¤©¤ Pin config ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
 #define LED_PIN   GPIO_Pin_2
@@ -21,6 +23,7 @@ typedef struct { uint16_t on; uint16_t off; uint8_t count; } Pattern;
 static const Pattern PAT_INIT_FAIL = { 100, 100, 2 };
 static const Pattern PAT_OK        = {  80,  80, 1 };
 
+uint8_t VL = 0;
 uint8_t devmode = 1;
 
 // ©¤©¤ LED ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -194,49 +197,75 @@ static void Enter_Standby(void)
     PWR_EnterSTANDBYMode(PWR_STANDBYEntry_WFE);
 
 
-    // Execution resumes here after wake (standby on V006 is actually stop mode
+    // Execution resumes here after wake (standby on V006 is actually stop mode)
     // that resets via EXTI, if true standby resets, remove code below)
 }
+
+// theme system 
+
+typedef struct {
+    uint8_t date_page,  date_col;
+    uint8_t hour_page,  hour_col;
+    uint8_t min_page,   min_col;
+    uint8_t sec_page,   sec_col;
+    const uint8_t *icon;
+    uint8_t icon_page,  icon_col;
+    const uint8_t *colon1;
+    uint8_t colon1_page, colon1_col;
+    const uint8_t *colon2;
+    uint8_t colon2_page, colon2_col;
+    bool show_sec;
+} UI_Theme;
+
+static const UI_Theme themes[] = {
+    { .hour_page = 2, .hour_col = 20, .min_page = 2,  .min_col = 44, .sec_page = 2, .sec_col = 68, .date_page = 0, .date_col = 14, .colon1_page = 2, .colon1_col = 38, .colon2_page = 2, .colon2_col = 62, .show_sec = true}, 
+    { .hour_page = 2, .hour_col = 38, .min_page = 2, .min_col = 55, .sec_page = 2, .sec_col = 56, .date_page = 0, .date_col = 1, .colon1_page = 2, .colon1_col = 50, .colon2_page = 1, .colon2_col = 53, .show_sec = false, .icon = bmp_warning, .icon_col = 70, .icon_page = 2}
+};
+
+uint8_t current_theme = 0;
 
 // ©¤©¤ UI draw ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
 static void Draw_Clock(RTC_Time *now, RTC_Time *prev)
 {
+    const UI_Theme *t = &themes[current_theme];
     char buf[12];
 
-    // Date only redraw if date changed
     if (now->day != prev->day || now->month != prev->month || now->year != prev->year) {
         u8_to_str(now->day,   buf);     buf[2] = '/';
         u8_to_str(now->month, buf+3);   buf[5] = '/';
         u16_to_str(now->year, buf+6);   buf[10] = '\0';
-        SSD1306_Print(0, 14, buf);
+        SSD1306_Print(t->date_page, t->date_col, buf);
         SSD1306_HLine(1, 0x08);
     }
 
-    // Hours
     if (now->hour != prev->hour) {
         u8_to_str(now->hour, buf);
-        SSD1306_Print(2, 20, buf);
+        SSD1306_Print(t->hour_page, t->hour_col, buf);
     }
 
-    // Minutes also draw colon once on first draw
     if (now->min != prev->min || prev->hour == 255) {
         u8_to_str(now->min, buf);
-        SSD1306_Print(2, 44, buf);
+        SSD1306_Print(t->min_page, t->min_col, buf);
     }
 
-    // Seconds always update
-    u8_to_str(now->sec, buf);
-    SSD1306_Print(2, 68, buf);
+    if (t->show_sec) {
+        u8_to_str(now->sec, buf);
+        SSD1306_Print(t->sec_page, t->sec_col, buf);
+    }
 
-    // Colons draw once (they never change duh)
     if (prev->hour == 255) {
-        SSD1306_Print(2, 38, ":");
-        SSD1306_Print(2, 62, ":");
+        SSD1306_Print(t->colon1_page, t->colon1_col, ":");
+        SSD1306_Print(t->colon2_page, t->colon2_col, ":");
+    }
+
+    if (t->icon != NULL) {
+        SSD1306_DrawBitmap(t->icon_page, t->icon_col, t->icon, 12, 12);
     }
 
     *prev = *now;
 }
 
+bool ismenu;
 static void Draw_Inputs(void)
 {
     // Clear row 3
@@ -247,6 +276,7 @@ static void Draw_Inputs(void)
     if (Btn_Pressed(BTN_UP))  {
         Blink(&PAT_OK);
         SSD1306_Print(3,  0, "UP");
+        ismenu = 1;
     }
     if (Btn_Pressed(BTN_DN)) {
     SSD1306_Print(3, 50, "DN");
@@ -259,6 +289,59 @@ static void Draw_Inputs(void)
         devmode = 1;
     }
     if (devmode) SSD1306_Print(0, 80, "devmode");
+}
+
+// self explanatory
+void drawMenu(void) 
+{
+    SSD1306_Clear();
+    SSD1306_DrawBitmap(2, 0, bmp_warning, 12, 12);
+    SSD1306_Print(0,40, "BLINK OK");
+    SSD1306_Print(1,40, "BLINK FAIL");
+    SSD1306_Print(2,40, "LEGACY MODE");
+}
+
+// menu
+uint8_t cursor = 0;
+uint8_t cursor_prev = 0;
+static void showMenu(void)
+{
+    if(!ismenu) return;
+    drawMenu();
+    while(ismenu) {
+    SSD1306_Print(cursor, 20, "@"); // could change it but i like the design on this one
+        if (Btn_Pressed(BTN_UP)) {
+                cursor_prev = cursor;
+               cursor = cursor + 1;
+               if (cursor >= 3) cursor = 0; // in legacy mode, there is 4 pages, normal mode get 8.
+               SSD1306_Print(cursor_prev, 20, " ");
+               Delay_Ms(500);
+        }
+        if (Btn_Pressed(BTN_DN)) {
+            ismenu = 0;
+            SSD1306_Clear();
+            return;
+        }
+        if (Btn_Pressed(BTN_CLK)) {
+            switch(cursor) {
+                case 0 : { //BLINK OK
+                    Blink(&PAT_OK);
+                    break;
+                }
+                case 1 : { //BLINK FAIL
+                    Blink(&PAT_INIT_FAIL);
+                    break;
+                }
+                case 2 : { // LEGACY MODE
+                    legacy_mode = !legacy_mode;
+                    SSD1306_Init();
+                    drawMenu();
+                    break;
+                }
+            }
+
+        }
+    }
 }
 
 // ©¤©¤ Main ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -276,10 +359,11 @@ int main(void)
     uint8_t rtc_ok  = (PCF8563_Init() == 0);
     uint8_t oled_ok = (SSD1306_Init() == 0);
 
-    // VL flag check, reset if set
-    // uint8_t sec_reg = 0;
-    // if (I2C_ReadReg(PCF8563_ADDR, 0x02, &sec_reg) == 0 && (sec_reg & 0x80))
-    //    NVIC_SystemReset();
+    // VL flag check
+    uint8_t sec_reg = 0;
+    if (I2C_ReadReg(PCF8563_ADDR, 0x02, &sec_reg) == 0 && (sec_reg & 0x80)) {
+        uint8_t VL = 1;
+    }
 
     // Seed time comment out after first flash
     /* if (rtc_ok) {
@@ -313,9 +397,10 @@ int main(void)
         Blink(&PAT_OK);
     }
 
-if (!oled_ok) {
+    if (!oled_ok) {
     Blink(&PAT_INIT_FAIL);
-}
+    }
+
     while (1) {
         tick += 50;
         Delay_Ms(50);
@@ -325,6 +410,7 @@ if (!oled_ok) {
             if (rtc_ok && oled_ok && PCF8563_GetTime(&now) == 0) {
                 Draw_Clock(&now, &prev);
                 Draw_Inputs();
+                showMenu();
             }
 
             // Auto-off after DISPLAY_ON_MS
@@ -332,6 +418,7 @@ if (!oled_ok) {
                 disp_on = 0;
                 SSD1306_Off();
                 LED_Set(0);
+                ismenu = 0;
             }
         } else {
             // Display is off  enter standby, wake on EXTI (PD6, button UP)
@@ -353,5 +440,6 @@ if (!oled_ok) {
             }
             // Short press stay off loop back
         }
+
     }
 }

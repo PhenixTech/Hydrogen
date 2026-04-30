@@ -2,7 +2,7 @@
 #include "ch32v00X_it.h"
 #include "i2c.h"
 #define SSD1306_ADDR  0x3C
-
+uint8_t legacy_mode = 1;
 
 uint8_t SSD1306_Cmd(uint8_t cmd)  { return I2C_WriteReg(SSD1306_ADDR, 0x00, cmd); }
 uint8_t SSD1306_Data(uint8_t dat) { return I2C_WriteReg(SSD1306_ADDR, 0x40, dat); }
@@ -10,30 +10,40 @@ uint8_t SSD1306_Data(uint8_t dat) { return I2C_WriteReg(SSD1306_ADDR, 0x40, dat)
 uint8_t SSD1306_Init(void)
 {
     if (I2C_Probe(SSD1306_ADDR) != 0) return 1;
-    static const uint8_t cmds[] = {
+
+    static const uint8_t cmds_normal[] = {
+        0xAE, 0xD5, 0x80, 0xA8, 0x3F, 0xD3, 0x00, 0x40,
+        0x8D, 0x14, 0x20, 0x00, 0xA1, 0xC8, 0xDA, 0x12,
+        0x81, 0x99, 0xD9, 0xF1, 0xDB, 0x40, 0xA4, 0xA6, 0xAF,
+    };
+    static const uint8_t cmds_legacy[] = {
         0xAE, 0xD5, 0x80, 0xA8, 0x1F, 0xD3, 0x00, 0x40,
         0x8D, 0x14, 0x20, 0x00, 0xA1, 0xC8, 0xDA, 0x02,
         0x81, 0x99, 0xD9, 0xF1, 0xDB, 0x40, 0xA4, 0xA6, 0xAF,
     };
-    for (uint8_t i = 0; i < sizeof(cmds); i++)
+
+    const uint8_t *cmds = legacy_mode ? cmds_legacy : cmds_normal;
+    uint8_t len = legacy_mode ? sizeof(cmds_legacy) : sizeof(cmds_normal);
+
+    for (uint8_t i = 0; i < len; i++)
         if (SSD1306_Cmd(cmds[i]) != 0) return 2;
     return 0;
 }
 
 void SSD1306_Clear(void)
 {
-    // Set column address 0..127
-    SSD1306_Cmd(0x21); SSD1306_Cmd(0x00); SSD1306_Cmd(0x7F);
-    // Set page address 0..3
-    SSD1306_Cmd(0x22); SSD1306_Cmd(0x00); SSD1306_Cmd(0x03);
-    // Flood entire GRAM (128 * 4 pages = 512 bytes)
-    for (uint16_t i = 0; i < 128 * 4; i++)
-        SSD1306_Data(0x00);
+    for (uint8_t page = 0; page < 8; page++) {
+        SSD1306_Cmd(0xB0 + page);
+        SSD1306_Cmd(0x00);
+        SSD1306_Cmd(0x10);
+        for (uint8_t col = 0; col < 128; col++)
+            SSD1306_Data(0x00);
+    }
 }
-
 void SSD1306_On(void)  { SSD1306_Cmd(0xAF); }
 void SSD1306_Off(void) { SSD1306_Cmd(0xAE); }
 
+// 5x7 basic font part
 static const uint8_t font5x7[][5] = {
     {0x00,0x00,0x00,0x00,0x00}, // ' '
     {0x00,0x00,0x5F,0x00,0x00}, // '!'
@@ -114,5 +124,21 @@ void SSD1306_Print(uint8_t page, uint8_t col, const char *str)
 
         col += 6;
         if (col >= 128) break;
+    }
+}
+
+// bitmap drawing function, theme soon 
+void SSD1306_DrawBitmap(uint8_t page, uint8_t col, const uint8_t *bmp, uint8_t width, uint8_t height)
+{
+    uint8_t pages = (height + 7) / 8;
+
+    for (uint8_t p = 0; p < pages; p++) {
+        SSD1306_Cmd(0xB0 + page + p);
+        SSD1306_Cmd(0x00 + (col & 0x0F));
+        SSD1306_Cmd(0x10 + (col >> 4));
+
+        for (uint8_t x = 0; x < width; x++) {
+            SSD1306_Data(bmp[p * width + x]);
+        }
     }
 }
