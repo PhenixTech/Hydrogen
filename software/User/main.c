@@ -291,9 +291,8 @@ static void Draw_Inputs(void)
     if (devmode) SSD1306_Print(0, 80, "devmode");
 }
 
-// self explanatory
-/* 
-//oh damn expendable menu system i need to finish
+/*
+// menu things v2
 typedef struct {
     uint8_t count;
     const char **options;
@@ -301,7 +300,7 @@ typedef struct {
 
 static const char *main_menu_options[] = {
     "BLINK OK",
-    "BLINK FAIL",
+    "SET RTC",
     "LEGACY MODE"
 };
 
@@ -310,10 +309,23 @@ static const UI_menu menu[] = {
 };
 
 uint8_t current_menu = 0;
-  */
+
+
+void drawMenuV2(const UI_menu *m) {
+    SSD1306_Clear();
+    for (uint8_t i = 0; i < menu[current_menu].count; i++) {
+    SSD1306_Print(i, 40, menu[current_menu].options[i]);
+    }
+}
+*/
+char buf[12];
 void drawMenu(void) 
 {
     SSD1306_Clear();
+
+    u16_to_str(SystemCoreClock / 1000000, buf);  // shows "8" or "48"
+    SSD1306_Print(3, 30, buf);
+
     SSD1306_DrawBitmap(2, 0, bmp_warning, 12, 12);
     SSD1306_Print(0,40, "BLINK OK");
     SSD1306_Print(1,40, "RTC SET");
@@ -325,13 +337,14 @@ void drawMenu(void)
 uint8_t new_min = 0;
 uint8_t new_hour = 12;
 bool menu_rtc = 0;
-char buf[12];
 uint8_t time_sel = 0;
-
+uint8_t new_date = 1;
+uint16_t new_year = 2026;
+uint8_t new_month = 1;
 uint8_t cursor = 0;
 uint8_t cursor_prev = 0;
 
-
+bool menu_date = 0;
 void setclock(void) {
 menu_rtc = 1;
     SSD1306_Clear();
@@ -339,7 +352,8 @@ menu_rtc = 1;
     // .date_page = 0 .date_col = 14
         if (new_hour > 23) new_hour = 0;
         if (new_min > 59) new_min = 0;
-        
+        if (new_date > 31) new_date = 1;
+        if (new_month > 12) new_month = 1;
         u8_to_str(new_min, buf);
         SSD1306_Print(2, 44, buf);
 
@@ -348,10 +362,19 @@ menu_rtc = 1;
         u8_to_str(new_hour, buf);
         SSD1306_Print(2, 20, buf);
 
+        u8_to_str(new_date, buf);
+        SSD1306_Print(0, 20, buf);
+
+        u8_to_str(new_month, buf);
+        SSD1306_Print(0, 40, buf);
+
+        u16_to_str(new_year, buf);
+        SSD1306_Print(0, 60, buf);
+
         if(Btn_Pressed(BTN_CLK)) {
             time_sel = time_sel + 1;
-            if(time_sel >= 2) {
-                RTC_Time set = { .sec=0, .min=new_min, .hour=new_hour, .day=29, .month=4, .year=2026 };
+            if(time_sel >= 5) {
+                RTC_Time set = { .sec=0, .min=new_min, .hour=new_hour, .day=new_date, .month=new_month, .year=new_year };
                 PCF8563_SetTime(&set);
                 time_sel = 0;
                 SSD1306_Clear();
@@ -377,7 +400,23 @@ menu_rtc = 1;
                         Delay_Ms(50);
                         SSD1306_Print(2, 44, "  ");
                         break;
-                        }
+                    case 2: 
+                        new_date = new_date + 1;
+                        Delay_Ms(50);
+                        SSD1306_Print(2, 20, "  ");
+                        break;
+                    case 3 :
+                        new_month = new_month + 1;
+                        Delay_Ms(150);
+                        SSD1306_Print(2, 44, "  ");
+                        break;
+                    case 4 :
+                        new_year = new_year + 1;
+                        Delay_Ms(200);
+                        SSD1306_Print(2, 60, "    ");
+                        break;
+                    }
+
         }
 
                 if (Btn_Pressed(BTN_DN)) 
@@ -394,8 +433,11 @@ menu_rtc = 1;
                         Delay_Ms(50);
                         SSD1306_Print(2, 44, "  ");
                         break;
-                        }
+                    }
         }
+    }
+    while(menu_date) {
+        
     }
 }
 
@@ -527,6 +569,8 @@ int main(void)
             if (hold >= HOLD_MS) {
                 // Long press : turn display on
                 SSD1306_On();
+                SystemCoreClockUpdate();
+                Delay_Init();
                 prev.hour = 255; // force full redraw
                 if (rtc_ok) {
                     PCF8563_GetTime(&now);
