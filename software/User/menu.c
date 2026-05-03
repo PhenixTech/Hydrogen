@@ -6,8 +6,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "drivers/ssd1306.h"
+#include "ch32v00X_adc.h"
 
 bool menu_rtc = 0;
+bool force_refresh = 0;
 
 uint8_t time_sel = 0;
 
@@ -20,14 +22,39 @@ uint8_t new_month = 1;
 uint8_t cursor = 0;
 uint8_t cursor_prev = 0;
 
+void InitializeADC()
+{
+     ADC_InitTypeDef ADC_InitStructure = {0};
+     RCC_PB2PeriphClockCmd(RCC_PB2Periph_ADC1, ENABLE);
+     RCC_ADCCLKConfig(RCC_PCLK2_Div8);
+
+     ADC_DeInit(ADC1);
+     ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
+     ADC_InitStructure.ADC_ScanConvMode = DISABLE;
+     ADC_InitStructure.ADC_ContinuousConvMode = ENABLE; 
+     ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None; 
+     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+     ADC_InitStructure.ADC_NbrOfChannel = 1; 
+     ADC_Init(ADC1, &ADC_InitStructure);
+
+     ADC_RegularChannelConfig(ADC1, ADC_Channel_8, 1, ADC_SampleTime_CyclesMode7);
+
+     ADC_Cmd(ADC1, ENABLE);
+
+     ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+}
+
 char buf[12];
 static void drawMenu(void) 
 {
+    InitializeADC();
     SSD1306_Clear();
-
     u16_to_str(SystemCoreClock / 1000000, buf);  // shows "8" or "48"
     SSD1306_Print(3, 30, buf);
-
+    uint16_t adcv = ADC_GetConversionValue(ADC1) ;
+    adcv = (uint32_t)(1200 * 4095) / adcv;
+    u16_to_str(adcv, buf);
+    SSD1306_Print(3,90, buf);
     SSD1306_DrawBitmap(2, 0, bmp_warning, 12, 12);
     SSD1306_Print(0,40, "BLINK OK");
     SSD1306_Print(1,40, "RTC SET");
@@ -38,16 +65,16 @@ static void drawMenu(void)
 static void setclock(void) {
 menu_rtc = 1;
     SSD1306_Clear();
+    SSD1306_Print(3, 20, "@@");
     while(menu_rtc) {
     // .date_page = 0 .date_col = 14
         if (new_hour > 23) new_hour = 0;
         if (new_min > 59) new_min = 0;
         if (new_date > 31) new_date = 1;
         if (new_month > 12) new_month = 1;
+
         u8_to_str(new_min, buf);
         SSD1306_Print(2, 44, buf);
-
-        SSD1306_Print(2, 38, ":");
 
         u8_to_str(new_hour, buf);
         SSD1306_Print(2, 20, buf);
@@ -60,9 +87,31 @@ menu_rtc = 1;
 
         u16_to_str(new_year, buf);
         SSD1306_Print(0, 60, buf);
+        SSD1306_Print(2, 38, ":");
+        SSD1306_Print(0, 32, "/");
+        SSD1306_Print(0, 54, "/");
 
         if(Btn_Pressed(BTN_CLK)) {
             time_sel = time_sel + 1;
+            switch(time_sel) 
+            {
+                case 1:
+                SSD1306_Print(3, 20, "  ");
+                SSD1306_Print(3, 44, "@@");
+                break;
+                case 2:
+                SSD1306_Print(3, 44, "  ");
+                SSD1306_Print(1, 20, "@@");
+                break;
+                case 3:
+                SSD1306_Print(1, 20, "  ");
+                SSD1306_Print(1, 40, "@@");
+                break;
+                case 4:
+                SSD1306_Print(1, 40, "  ");
+                SSD1306_Print(1, 60, "@@@@");
+                break;
+            }
             if(time_sel >= 5) {
                 RTC_Time set = { .sec=0, .min=new_min, .hour=new_hour, .day=new_date, .month=new_month, .year=new_year };
                 PCF8563_SetTime(&set);
@@ -72,6 +121,7 @@ menu_rtc = 1;
                 Delay_Ms(500);
                 SSD1306_Clear(); 
                 menu_rtc = 0;
+                force_refresh = 1;
                 }
             Delay_Ms(500);
         }
@@ -138,11 +188,10 @@ menu_rtc = 1;
                         Delay_Ms(200);
                         SSD1306_Print(2, 60, "    ");
                         break;
-                    }
                 }
+            }
         }
     }
-
 
 void showMenu(void)
 {
@@ -160,6 +209,7 @@ void showMenu(void)
         if (Btn_Pressed(BTN_DN)) {
             ismenu = 0;
             SSD1306_Clear();
+            force_refresh = 1;
             return;
         }
         if (Btn_Pressed(BTN_CLK)) {
@@ -181,7 +231,6 @@ void showMenu(void)
                     break;
                 }
             }
-
         }
     }
 }
@@ -193,7 +242,8 @@ void showMenu(void)
 
 
 
-/* menu things v2
+/*/ menu things v2
+
 typedef struct {
     uint8_t count;
     const char **options;
@@ -216,6 +266,17 @@ void drawMenuV2(const UI_menu *m) {
     SSD1306_Clear();
     for (uint8_t i = 0; i < menu[current_menu].count; i++) {
     SSD1306_Print(i, 40, menu[current_menu].options[i]);
+    }
+}
+
+void drawCursor() {
+    SSD1306_Print(cursor, 20, "@"); // could change it but i like the design on this one
+    if (Btn_Pressed(BTN_UP)) {
+            cursor_prev = cursor;
+            cursor = cursor + 1;
+            if (cursor >= menu[current_menu]->count) cursor = 0; // in legacy mode, there is 4 pages, normal mode get 8.
+            SSD1306_Print(cursor_prev, 20, " ");
+            Delay_Ms(50);
     }
 }
 */

@@ -4,7 +4,7 @@
 #include "drivers/ssd1306.h"
 #include "ui.h"
 #include "button.h"
-
+#include "menu.h"
 uint8_t current_theme = 0;
 bool themedrawn = false;
 
@@ -81,7 +81,7 @@ void Draw_Clock(RTC_Time *now, RTC_Time *prev)
         SSD1306_DrawBitmap(themes[current_theme].bmp_page, themes[current_theme].bmp_col, themes[current_theme].bmp, themes[current_theme].bmp_w, themes[current_theme].bmp_h);
     }
 
-    if (now->day != prev->day || now->month != prev->month || now->year != prev->year) {
+    if (now->day != prev->day || now->month != prev->month || now->year != prev->year || force_refresh) {
         u8_to_str(now->day,   buf);     buf[2] = '/';
         u8_to_str(now->month, buf+3);   buf[5] = '/';
         u16_to_str(now->year, buf+6);   buf[10] = '\0';
@@ -89,12 +89,12 @@ void Draw_Clock(RTC_Time *now, RTC_Time *prev)
         SSD1306_HLine(1, 0x08);
     }
 
-    if (now->hour != prev->hour) {
+    if (now->hour != prev->hour || force_refresh) {
         u8_to_str(now->hour, buf);
         SSD1306_Print(t->hour_page, t->hour_col, buf);
     }
 
-    if (now->min != prev->min || prev->hour == 255) {
+    if (now->min != prev->min || force_refresh) {
         u8_to_str(now->min, buf);
         SSD1306_Print(t->min_page, t->min_col, buf);
     }
@@ -104,7 +104,7 @@ void Draw_Clock(RTC_Time *now, RTC_Time *prev)
         SSD1306_Print(t->sec_page, t->sec_col, buf);
     }
 
-    if (prev->hour == 255) {
+    if (force_refresh) {
         SSD1306_Print(t->colon1_page, t->colon1_col, ":");
         SSD1306_Print(t->colon2_page, t->colon2_col, ":");
     }

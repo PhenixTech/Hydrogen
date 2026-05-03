@@ -6,4 +6,6 @@
 
 void showMenu(void);
 
+extern bool force_refresh;
+
 #endif

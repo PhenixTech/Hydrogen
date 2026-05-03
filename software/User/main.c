@@ -61,7 +61,6 @@ static void Enter_Standby(void)
     // that resets via EXTI, if true standby resets, remove code below)
 }
 
-
 // ©¤©¤ Main ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
 int main(void)
 {
@@ -93,6 +92,7 @@ int main(void)
     if (oled_ok) {
         Delay_Ms(500);
         SSD1306_Clear();
+        force_refresh = true;
         SSD1306_On();
         if (rtc_ok) {
             PCF8563_GetTime(&now);
@@ -137,7 +137,7 @@ int main(void)
                 SSD1306_On();
                 SystemCoreClockUpdate();
                 Delay_Init();
-                prev.hour = 255; // force full redraw
+                force_refresh = 1;
                 if (rtc_ok) {
                     PCF8563_GetTime(&now);
                     Draw_Clock(&now, &prev);
