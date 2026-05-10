@@ -18,7 +18,7 @@
 
 ![BANNER](images/BANNER.png)
 
-**Hydrogen V1** is a coin-cell (CR2032) powered keychain clock designed around aggressive power optimization and a minimal BOM. It wakes on button press, displays the time on an SSD1306 OLED for 5 seconds, then returns to deep sleep — targeting a **~12-month battery life** on a single CR2032.
+**Hydrogen V1** is a coin-cell (CR2032) powered keychain clock designed around aggressive power optimization and a minimal BOM. It wakes on button press, displays the time on an SSD1306 OLED for 5 seconds, then returns to deep sleep, targeting a **~12-month battery life** on a single CR2032.
 
 This is the first device in the **Hydrogen** line, part of the broader [PhenixTech](https://phenixtech.fr) hardware project ecosystem.
 
@@ -63,7 +63,7 @@ CR2032
 
 - **Two-PCB approach** — main board + SSD1306 module daughter board with a 4 pin headers. V2 will integrate a bare OLED panel on a single PCB.
 - **BAT54 Schottky** — keeps the RTC domain isolated for the holdover cap.
-- **22µF holdover cap** — keeps the RTC alive for ~20 seconds during a battery swap, preserving time.
+- **22µF holdover cap** — keeps the RTC alive for ~20 seconds during a battery swap, preserving time (also allow a clean shutdown).
 - **Debug interface** — three  pads (SWIO, GND, RST) with a 2.54mm pitch for WCH-LinkE programming.
 
 <img src="images/Schematic_Hydrogen-1_2026-04-07.png" width="50%">
@@ -72,7 +72,7 @@ CR2032
 
 ## Firmware
 
-> Developed with the CH32V SDK / MounRiver Studio II
+> Developed with the WCH SDK / MounRiver Studio II
 
 ### Behavior
 
@@ -98,7 +98,7 @@ CR2032
 
 | State | Current | Duration |
 |---|---|---|
-| Deep sleep (MCU + RTC) | ~50µA | ~90% of time |
+| Deep sleep (MCU + RTC) | ~50µA | ~99% of time |
 | Active (OLED on, MCU running) | ~10mA | 5s per wake |
 | LED flash (low-battery) | ~1mA | brief pulse |
 
