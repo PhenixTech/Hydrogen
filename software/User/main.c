@@ -53,6 +53,9 @@ static void Enter_Standby(void)
 
     RCC_PB1PeriphClockCmd(RCC_PB1Periph_PWR, ENABLE);
 
+    ADC_Cmd(ADC1, DISABLE);
+    RCC_PB2PeriphClockCmd(RCC_PB2Periph_ADC1, DISABLE);
+
     // Standby mode, wakes from EXTI
     PWR_EnterSTANDBYMode(PWR_STANDBYEntry_WFE);
 
@@ -67,6 +70,7 @@ int main(void)
     SystemCoreClockUpdate();
     Delay_Init();
     LED_Init();
+    InitializeADC();
     Buttons_Init();
     EXTI_Wake_Init();
     Delay_Ms(300);
@@ -127,7 +131,7 @@ int main(void)
                 ismenu = 0;
             }
         } else {
-            // Display is off  enter standby, wake on EXTI (PD6, button UP)
+            // Display is off enter standby, wake on EXTI (PD6, button UP)
             Enter_Standby();
 
             // Woke up : measure hold duration

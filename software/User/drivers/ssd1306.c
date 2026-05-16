@@ -41,8 +41,16 @@ void SSD1306_Clear(void)
             SSD1306_Data(0x00);
     }
 }
-void SSD1306_On(void)  { SSD1306_Cmd(0xAF); }
-void SSD1306_Off(void) { SSD1306_Cmd(0xAE); }
+void SSD1306_On(void)  { 
+                        SSD1306_Cmd(0x8D); 
+                        SSD1306_Cmd(0x14); 
+                        SSD1306_Cmd(0xAF); 
+                        
+}
+void SSD1306_Off(void) { SSD1306_Cmd(0xAE); 
+                         SSD1306_Cmd(0x8D);
+                         SSD1306_Cmd(0x10);
+}
 
 // 5x7 basic font part
 static const uint8_t font5x7[][5] = {

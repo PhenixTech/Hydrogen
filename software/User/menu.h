@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 void showMenu(void);
+void InitializeADC();
 
 extern bool force_refresh;
 
