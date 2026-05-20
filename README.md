@@ -6,8 +6,6 @@
 ![Hardware](https://img.shields.io/badge/hardware-open-blue?style=plastic) 
 ![MCU](https://img.shields.io/badge/MCU-CH32V006-green?style=plastic)
 ![Architecture](https://img.shields.io/badge/RISC--V-RV32EC-red?style=plastic)
-![Battery Life](https://img.shields.io/badge/battery%20life-~12%20months-brightgreen?style=plastic)
-
 
 <img src="images/PCB-3D-TOP.png" width="25%"> <img src="images/IRL-ON.jpg" width="25%"> <img src="images/IRL-BK.jpg" width="25%">
 
@@ -18,7 +16,7 @@
 
 ![BANNER](images/BANNER.png)
 
-**Hydrogen V1** is a coin-cell (CR2032) powered keychain clock designed around aggressive power optimization and a minimal BOM. It wakes on button press, displays the time on an SSD1306 OLED for 5 seconds, then returns to deep sleep, targeting a **~12-month battery life** on a single CR2032.
+**Hydrogen V1** is a coin-cell (CR2032) powered keychain clock designed around aggressive power optimization and a minimal BOM. It wakes on button press, displays the time on an SSD1306 OLED for 5 seconds, then returns to deep sleep, targeting a **~6-month battery life** on a single CR2032.
 
 This is the first device in the **Hydrogen** line, part of the broader [PhenixTech](https://phenixtech.fr) hardware project ecosystem.
 
@@ -94,16 +92,16 @@ CR2032
   Return to deep sleep
 ```
 
-### Power Budget (estimated)
+### Power Budget
 
 | State | Current | Duration |
 |---|---|---|
-| Deep sleep (MCU + RTC) | ~50µA | ~99% of time |
-| Active (OLED on, MCU running) | ~10mA | 5s per wake |
-| LED flash (low-battery) | ~1mA | brief pulse |
+| Deep sleep (MCU + RTC) | ~~50µA~~ 1.1mA | ~99% of time |
+| Active (OLED on, MCU running) | 8.9mA | 5s per wake |
+| LED flash (low-battery) | ~500uA | brief pulse |
 
-*Estimated battery life: **~12 months** on a standard CR2032 (225mAh).*
-
+~~*Estimated battery life: **~12 months** on a standard CR2032 (225mAh).*~~
+~about 2 weeks due to hardware fault (see issues)
 ---
 
 ## PCB
