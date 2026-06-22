@@ -75,6 +75,7 @@ int main(void)
     Delay_Ms(300);
     I2C_Init_Bus();
     SSD1306_Clear();
+    SDI_Printf_Enable();
 
     uint8_t rtc_ok  = (PCF8563_Init() == 0);
     uint8_t oled_ok = (SSD1306_Init() == 0);
@@ -90,6 +91,7 @@ int main(void)
     uint32_t tick    = 0;
     uint32_t on_since = 0;
     uint8_t  disp_on  = 0;
+    static uint32_t last_scrn = 0;
 
     // Cold boot show display immediately without requiring hold
     if (oled_ok) {
@@ -115,13 +117,17 @@ int main(void)
         Delay_Ms(50);
 
         if (disp_on) {
+            I2C_Init_Bus();
             // Update display
             if (rtc_ok && oled_ok && PCF8563_GetTime(&now) == 0) {
                 Draw_Clock(&now, &prev);
                 Draw_Inputs();
                 showMenu();
             }
-
+            if (devmode && tick - last_scrn >= 1000) {
+                SSD1306_Screenshot();
+                last_scrn = tick;
+            }
             // Auto-off after DISPLAY_ON_MS
             if (!devmode && tick - on_since >= DISPLAY_ON_MS) {
                 disp_on = 0;
