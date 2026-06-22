@@ -9,10 +9,9 @@
 #include "menu.h"
 #include <stdbool.h>
 
-// ©¤©¤ Pin config ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
 #define DISPLAY_ON_MS  3000  // display stays on 3s 
 
-// ©¤©¤ EXTI wake on PD6 (click) ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+// EXTI (interupt) wake on PD6 (click)
 static void EXTI_Wake_Init(void)
 {
     RCC_PB2PeriphClockCmd(RCC_PB2Periph_AFIO, ENABLE);
@@ -45,11 +44,12 @@ void EXTI7_0_IRQHandler(void)
         EXTI_ClearITPendingBit(EXTI_Line6);
 }
 
-// ©¤©¤ Deep sleep ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+// Deep sleep (beware, could be the reason for the 1.1mA issue)
 static void Enter_Standby(void)
 {
     SSD1306_Off();
     LED_Set(0);
+    I2C_Stop_Bus();
 
     RCC_PB1PeriphClockCmd(RCC_PB1Periph_PWR, ENABLE);
 
@@ -60,11 +60,10 @@ static void Enter_Standby(void)
     PWR_EnterSTANDBYMode(PWR_STANDBYEntry_WFE);
 
 
-    // Execution resumes here after wake (standby on V006 is actually stop mode)
-    // that resets via EXTI, if true standby resets, remove code below)
+    // Execution resumes here after wake (standby on V006 is actually stop mode disable swio and stuff)
 }
 
-// ©¤©¤ Main ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+// MAIN
 int main(void)
 {
     SystemCoreClockUpdate();
@@ -138,6 +137,7 @@ int main(void)
             uint32_t hold = Btn_HoldMs(BTN_CLK);
             if (hold >= HOLD_MS) {
                 // Long press : turn display on
+                I2C_Init_Bus();
                 SSD1306_On();
                 SystemCoreClockUpdate();
                 Delay_Init();

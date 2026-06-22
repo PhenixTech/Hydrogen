@@ -27,6 +27,19 @@ void I2C_Init_Bus(void)
     I2C_Cmd(I2C1, ENABLE);
 }
 
+void I2C_Stop_Bus(void)
+{
+    I2C_Cmd(I2C1, DISABLE);
+    RCC_PB1PeriphClockCmd(RCC_PB1Periph_I2C1, DISABLE);
+
+    GPIO_InitTypeDef g = {
+        .GPIO_Pin   = GPIO_Pin_1 | GPIO_Pin_2,
+        .GPIO_Mode  = GPIO_Mode_IN_FLOATING,
+        .GPIO_Speed = GPIO_Speed_30MHz,
+    };
+    GPIO_Init(GPIOC, &g);
+}
+
 uint8_t I2C_Probe(uint8_t addr)
 {
     uint32_t t;
