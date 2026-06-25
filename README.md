@@ -3,7 +3,7 @@
 > *A CR2032-powered keychain clock, minimalist, open hardware, and built to last.*
 
 
-![Hardware](https://img.shields.io/badge/hardware-open-blue?style=plastic) 
+![Hardware](https://img.shields.io/badge/HARDWARE-open-blue?style=plastic) 
 ![MCU](https://img.shields.io/badge/MCU-CH32V006-green?style=plastic)
 ![Architecture](https://img.shields.io/badge/RISC--V-RV32EC-red?style=plastic)
 
@@ -37,7 +37,7 @@ CR2032
   │       │
   │       ├── I²C ──► PCF8563T RTC
   │       ├── I²C ──► SSD1306 OLED (daughter board)
-  │       ├── GPIO ──► LED (3kΩ, ~1mA, low-battery indicator)
+  │       ├── GPIO ──► LED (3kΩ, ~500uA, low-battery indicator)
   │       └── SWIO/RST pads (debug header)
   │
   └──► 3215 32.768kHz crystal (RTC clock source)
