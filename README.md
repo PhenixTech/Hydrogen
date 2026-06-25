@@ -96,12 +96,11 @@ CR2032
 
 | State | Current | Duration |
 |---|---|---|
-| Deep sleep (MCU + RTC) | ~~50µA~~ 1.1mA | ~99% of time |
-| Active (OLED on, MCU running) | 8.9mA | 5s per wake |
+| Deep sleep (MCU + RTC) | 60uA | ~99% of time |
+| Active (OLED on, MCU running) | 8mA | 5s per wake |
 | LED flash (low-battery) | ~500uA | brief pulse |
 
-~~*Estimated battery life: **~12 months** on a standard CR2032 (225mAh).*~~
-~about 2 weeks due to hardware fault (see issues)
+*Estimated battery life: **~6 months** on a standard CR2032 (225mAh).*
 ---
 
 ## PCB
