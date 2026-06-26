@@ -6,12 +6,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "drivers/ssd1306.h"
-#include "ch32v00X_adc.h"
 
 bool menu_rtc = 0;
 bool force_refresh = 0;
-
+uint8_t scroll = 0;
 uint8_t time_sel = 0;
+uint8_t page = 1;
 
 uint8_t new_min = 0;
 uint8_t new_hour = 12;
@@ -22,34 +22,13 @@ uint8_t new_month = 1;
 uint8_t cursor = 0;
 uint8_t cursor_prev = 0;
 
-void InitializeADC()
-{
-     ADC_InitTypeDef ADC_InitStructure = {0};
-     RCC_PB2PeriphClockCmd(RCC_PB2Periph_ADC1, ENABLE);
-     RCC_ADCCLKConfig(RCC_PCLK2_Div8);
-
-     ADC_DeInit(ADC1);
-     ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
-     ADC_InitStructure.ADC_ScanConvMode = DISABLE;
-     ADC_InitStructure.ADC_ContinuousConvMode = ENABLE; 
-     ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None; 
-     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
-     ADC_InitStructure.ADC_NbrOfChannel = 1; 
-     ADC_Init(ADC1, &ADC_InitStructure);
-
-     ADC_RegularChannelConfig(ADC1, ADC_Channel_8, 1, ADC_SampleTime_CyclesMode7);
-
-     ADC_Cmd(ADC1, ENABLE);
-
-     ADC_SoftwareStartConvCmd(ADC1, ENABLE);
-}
 
 char buf[12];
-static void drawMenu(void) 
-{
-    InitializeADC();
+static void drawMenu() 
+{ 
+    /*
     SSD1306_Clear();
-    u16_to_str(SystemCoreClock / 1000000, buf);  // shows "8" or "48"
+    u16_to_str(SystemCoreClock / 1000000, buf); 
     SSD1306_Print(3, 30, buf);
     uint16_t adcv = ADC_GetConversionValue(ADC1) ;
     adcv = (uint32_t)(1200 * 4095) / adcv;
@@ -58,7 +37,33 @@ static void drawMenu(void)
     SSD1306_DrawBitmap(2, 0, bmp_warning, 12, 12);
     SSD1306_Print(0,40, "BLINK OK");
     SSD1306_Print(1,40, "RTC SET");
-    SSD1306_Print(2,40, "LEGACY MODE");
+    SSD1306_Print(2,40, "LEGACY MODE"); */
+}
+
+static void MenuPage(uint8_t page)
+{
+    SSD1306_Clear();
+    switch(page) {
+        case 1:
+            u16_to_str(SystemCoreClock / 1000000, buf); 
+            SSD1306_Print(3, 30, buf);
+            uint16_t adcv = ADC_GetConversionValue(ADC1) ;
+            adcv = (uint32_t)(1200 * 4095) / adcv;
+            u16_to_str(adcv, buf);
+            SSD1306_Print(3,90, buf);
+            SSD1306_DrawBitmap(2, 0, bmp_warning, 12, 12);
+            SSD1306_Print(0,40, "BLINK OK");
+            SSD1306_Print(1,40, "RTC SET");
+            SSD1306_Print(2,40, "LEGACY MODE");            
+            break;
+        case 2:
+
+            SSD1306_Print(0, 40, "TESTING");
+            break;
+        case 3:
+        ismenu = 0;
+        break;
+    }
 }
 
 
@@ -197,12 +202,17 @@ void showMenu(void)
 {
     if(ismenu == 0) return;
     drawMenu();
+    MenuPage(1);
     while(ismenu == 1) {
     SSD1306_Print(cursor, 20, "@"); // could change it but i like the design on this one
         if (Btn_Pressed(BTN_UP)) {
                cursor_prev = cursor;
                cursor = cursor + 1;
-               if (cursor >= 3) cursor = 0; // in legacy mode, there is 4 pages, normal mode get 8.
+               if (cursor >= 3) { 
+                    cursor = 0; // in legacy mode, there is 4 pages, normal mode get 8.
+                    page++ ;
+                    MenuPage(page); 
+               } 
                SSD1306_Print(cursor_prev, 20, " ");
                Delay_Ms(500);
         }

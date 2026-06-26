@@ -8,6 +8,8 @@
 #include "button.h"
 #include "menu.h"
 #include <stdbool.h>
+#include "ch32v00X_adc.h"
+
 
 #define DISPLAY_ON_MS  3000  // display stays on 3s 
 
@@ -44,7 +46,29 @@ void EXTI7_0_IRQHandler(void)
         EXTI_ClearITPendingBit(EXTI_Line6);
 }
 
-// Deep sleep (beware, could be the reason for the 1.1mA issue)
+void InitializeADC()
+{
+     ADC_InitTypeDef ADC_InitStructure = {0};
+     RCC_PB2PeriphClockCmd(RCC_PB2Periph_ADC1, ENABLE);
+     RCC_ADCCLKConfig(RCC_PCLK2_Div8);
+
+     ADC_DeInit(ADC1);
+     ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
+     ADC_InitStructure.ADC_ScanConvMode = DISABLE;
+     ADC_InitStructure.ADC_ContinuousConvMode = ENABLE; 
+     ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None; 
+     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+     ADC_InitStructure.ADC_NbrOfChannel = 1; 
+     ADC_Init(ADC1, &ADC_InitStructure);
+
+     ADC_RegularChannelConfig(ADC1, ADC_Channel_8, 1, ADC_SampleTime_CyclesMode7);
+
+     ADC_Cmd(ADC1, ENABLE);
+
+     ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+}
+
+// Deep sleep 
 static void Enter_Standby(void)
 {
     SSD1306_Off();
@@ -75,7 +99,6 @@ int main(void)
     Delay_Ms(300);
     I2C_Init_Bus();
     SSD1306_Clear();
-    SDI_Printf_Enable();
 
     uint8_t rtc_ok  = (PCF8563_Init() == 0);
     uint8_t oled_ok = (SSD1306_Init() == 0);
@@ -117,6 +140,7 @@ int main(void)
 
         if (disp_on) {
             I2C_Init_Bus();
+            InitializeADC();
             // Update display
             if (rtc_ok && oled_ok && PCF8563_GetTime(&now) == 0) {
                 Draw_Clock(&now, &prev);
