@@ -91,7 +91,6 @@ int main(void)
     uint32_t tick    = 0;
     uint32_t on_since = 0;
     uint8_t  disp_on  = 0;
-    static uint32_t last_scrn = 0;
 
     // Cold boot show display immediately without requiring hold
     if (oled_ok) {
@@ -123,10 +122,6 @@ int main(void)
                 Draw_Clock(&now, &prev);
                 Draw_Inputs();
                 showMenu();
-            }
-            if (devmode && tick - last_scrn >= 1000) {
-                SSD1306_Screenshot();
-                last_scrn = tick;
             }
             // Auto-off after DISPLAY_ON_MS
             if (!devmode && tick - on_since >= DISPLAY_ON_MS) {

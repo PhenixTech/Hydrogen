@@ -7,20 +7,8 @@
 uint8_t legacy_mode = 1;
 
 
-extern bool devmode;
-static uint8_t ssd1306_buffer[1024];
-static uint16_t buf_idx = 0;
-
-
 uint8_t SSD1306_Cmd(uint8_t cmd)  { return I2C_WriteReg(SSD1306_ADDR, 0x00, cmd); }
-uint8_t SSD1306_Data(uint8_t dat)
-{
-    if (devmode) {
-        ssd1306_buffer[buf_idx % 1024] = dat;
-        buf_idx++;
-    }
-    return I2C_WriteReg(SSD1306_ADDR, 0x40, dat);
-}
+uint8_t SSD1306_Data(uint8_t dat) { return I2C_WriteReg(SSD1306_ADDR, 0x40, dat); }
 
 uint8_t SSD1306_Init(void)
 {
@@ -164,13 +152,4 @@ void SSD1306_DrawBitmap(uint8_t page, uint8_t col, const uint8_t *bmp, uint8_t w
             SSD1306_Data(bmp[p * width + x]);
         }
     }
-}
-
-void SSD1306_Screenshot(void)
-{
-    if (!devmode) return;
-    printf("SCRN:");
-    for (uint16_t i = 0; i < 1024; i++)
-        printf("%02X", ssd1306_buffer[i]);
-    printf("\n");
 }
