@@ -3,7 +3,7 @@
 > *A CR2032-powered keychain clock, minimalist, open hardware, and built to last.*
 
 
-![Hardware](https://img.shields.io/badge/HARDWARE-open-blue?style=plastic) 
+![Hardware](https://img.shields.io/badge/HARDWARE-OPEN-blue?style=plastic) 
 ![MCU](https://img.shields.io/badge/MCU-CH32V006-green?style=plastic)
 ![Architecture](https://img.shields.io/badge/RISC--V-RV32EC-red?style=plastic)
 
