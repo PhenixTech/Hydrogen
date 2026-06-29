@@ -77,3 +77,20 @@ void Enter_Standby(void)
 
     // Execution resumes here after wake (standby on V006 is actually stop mode disable swio and stuff)
 }
+
+volatile uint32_t sys_ms = 0;
+
+void SysTick_Init(void) {
+    SysTick->CMP  = SystemCoreClock / 1000 - 1;
+    SysTick->CNT  = 0;
+    SysTick->SR   = 0;
+    SysTick->CTLR = (1<<0)|(1<<1)|(1<<2)|(1<<3);
+}
+
+__attribute__((interrupt("WCH-Interrupt-fast")))
+void SysTick_Handler(void) {
+    SysTick->SR &= ~1;
+    sys_ms++;
+}
+
+uint32_t millis(void) { return sys_ms; }

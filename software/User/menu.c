@@ -156,6 +156,29 @@ menu_rtc = 1;
         }
 }
 
+bool sw_started = false;
+bool menu_sw = 0;
+
+static void stopwatch(void)
+{
+    menu_sw = 1;
+    while(menu_sw)  {
+        uint32_t sw_start_ms = 0;
+        uint32_t sw_elapsed  = 0;
+        sw_start_ms = millis();
+        sw_elapsed = millis() - sw_start_ms;
+        uint8_t sec  = (sw_elapsed / 1000) % 60;
+        uint8_t mins = (sw_elapsed / 60000) % 60;
+        u8_to_str(mins, buf); SSD1306_Print(0, 20, buf);
+        SSD1306_Print(0, 32, ":");
+        u8_to_str(sec, buf);  SSD1306_Print(0, 38, buf);
+    if (Btn_Pressed(BTN_UP)) { if (sw_started == 0) {SSD1306_Print(2,20, "cleared"); Delay_Ms(200); SSD1306_Print(2,20, "       "); Delay_Ms(300);} } 
+    if (Btn_Pressed(BTN_DN)) { if (sw_started == 1) {SSD1306_Print(1,20, "new lap"); Delay_Ms(200); SSD1306_Print(1,20, "       "); Delay_Ms(300); } }
+    if (Btn_Pressed(BTN_CLK)) { if (sw_started == 0) { SSD1306_Print(0,20, "Watch started"); sw_started = 1; Delay_Ms(300);}
+                                else { sw_started = 0; SSD1306_Print(0, 20,"              "); } Delay_Ms(300);}
+    if (Btn_HoldMs(BTN_UP)) { if (sw_started == 0) { menu_sw = 0;} }
+    }
+}
 
 static void MenuPage(uint8_t page)
 {
@@ -177,6 +200,7 @@ static void MenuPage(uint8_t page)
             break;
         case 2:
             SSD1306_Print(0, 40, "EXIT MENU");
+            SSD1306_Print(1, 40, "STOPWATCH");
             break;
         case 3:
             SSD1306_Print(0,40, "Firmware");
@@ -205,6 +229,7 @@ static void MoveCursor(int8_t dir)
     Delay_Ms(300);
 
 }
+
 void showMenu(void)
 {
     if(ismenu == 0) return;
@@ -230,6 +255,7 @@ void showMenu(void)
                 case 2 :
                     switch(cursor) {
                         case 0 : { SSD1306_Clear(); ismenu = 0; break; }
+                        case 1 : { SSD1306_Clear(); stopwatch(); ismenu = 0; break; }
                     }
                     break;
             }
