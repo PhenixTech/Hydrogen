@@ -66,9 +66,6 @@ void Enter_Standby(void)
     LED_Set(0);
     I2C_Stop_Bus();
 
-
-
-
     RCC_PB1PeriphClockCmd(RCC_PB1Periph_PWR, ENABLE);
 
     ADC_Cmd(ADC1, DISABLE);
@@ -79,7 +76,6 @@ void Enter_Standby(void)
 
 
     // Execution resumes here after wake (standby on V006 is actually stop mode disable swio and stuff)
-
 }
 
 
@@ -97,3 +93,5 @@ void SysTick_Handler(void) {
     SysTick->SR &= ~1;
     sys_ms++;
 }
+
+uint32_t millis(void) { return sys_ms; }
