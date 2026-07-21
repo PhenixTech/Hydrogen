@@ -18,6 +18,7 @@ int main(void)
 {
     SystemCoreClockUpdate();
     Delay_Init();
+    SysTick_Init();
     LED_Init();
     InitializeADC();
     Buttons_Init();

@@ -162,25 +162,98 @@ static void setclock(void)
 bool sw_started = false;
 bool menu_sw = 0;
 
+static void wait_button_release(uint16_t pin)
+{
+    while (Btn_Pressed(pin)) {
+        Delay_Ms(10);
+    }
+    Delay_Ms(40);
+}
+
+static void draw_stopwatch_time(uint8_t page, uint8_t col, uint32_t elapsed_ms)
+{
+    uint8_t centis = (elapsed_ms / 10) % 100;
+    uint8_t sec = (elapsed_ms / 1000) % 60;
+    uint8_t mins = (elapsed_ms / 60000) % 100;
+
+    u8_to_str(mins, buf);
+    SSD1306_Print(page, col, buf);
+    SSD1306_Print(page, col + 12, ":");
+    u8_to_str(sec, buf);
+    SSD1306_Print(page, col + 18, buf);
+    SSD1306_Print(page, col + 30, ".");
+    u8_to_str(centis, buf);
+    SSD1306_Print(page, col + 36, buf);
+}
+
 static void stopwatch(void)
 {
+    uint32_t sw_start_ms = 0;
+    uint32_t sw_elapsed_ms = 0;
+    uint32_t last_draw_ms = 0;
+
     menu_sw = 1;
-    while(menu_sw)  {
-        uint32_t sw_start_ms = 0;
-        uint32_t sw_elapsed  = 0;
-        sw_start_ms = millis();
-        sw_elapsed = millis() - sw_start_ms;
-        uint8_t sec  = (sw_elapsed / 1000) % 60;
-        uint8_t mins = (sw_elapsed / 60000) % 60;
-        u8_to_str(mins, buf); SSD1306_Print(0, 20, buf);
-        SSD1306_Print(0, 32, ":");
-        u8_to_str(sec, buf);  SSD1306_Print(0, 38, buf);
-    if (Btn_Pressed(BTN_UP)) { if (sw_started == 0) {SSD1306_Print(2,20, "cleared"); Delay_Ms(200); SSD1306_Print(2,20, "       "); Delay_Ms(300);} } 
-    if (Btn_Pressed(BTN_DN)) { if (sw_started == 1) {SSD1306_Print(1,20, "new lap"); Delay_Ms(200); SSD1306_Print(1,20, "       "); Delay_Ms(300); } }
-    if (Btn_Pressed(BTN_CLK)) { if (sw_started == 0) { SSD1306_Print(0,20, "Watch started"); sw_started = 1; Delay_Ms(300);}
-                                else { sw_started = 0; SSD1306_Print(0, 20,"              "); } Delay_Ms(300);}
-    if (Btn_HoldMs(BTN_UP)) { if (sw_started == 0) { menu_sw = 0;} }
+    sw_started = false;
+
+    SSD1306_Clear();
+    SSD1306_Print(0, 20, "STOPWATCH");
+    SSD1306_Print(2, 0, "CLK start/stop");
+    SSD1306_Print(3, 0, "UP rst/hold exit");
+    draw_stopwatch_time(1, 28, 0);
+
+    while (menu_sw) {
+        uint32_t now_ms = millis();
+        uint32_t shown_ms = sw_elapsed_ms;
+
+        if (sw_started) {
+            shown_ms += now_ms - sw_start_ms;
+        }
+
+        if (force_refresh || now_ms - last_draw_ms >= 50) {
+            draw_stopwatch_time(1, 28, shown_ms);
+            last_draw_ms = now_ms;
+            force_refresh = false;
+        }
+
+        if (Btn_Pressed(BTN_CLK)) {
+            if (sw_started) {
+                sw_elapsed_ms += now_ms - sw_start_ms;
+                sw_started = false;
+                SSD1306_Print(0, 96, "STOP");
+            } else {
+                sw_start_ms = now_ms;
+                sw_started = true;
+                SSD1306_Print(0, 96, "RUN ");
+            }
+            wait_button_release(BTN_CLK);
+            force_refresh = true;
+        }
+
+        if (Btn_Pressed(BTN_DN)) {
+            if (sw_started) {
+                SSD1306_Print(2, 0, "Lap            ");
+                draw_stopwatch_time(2, 28, shown_ms);
+            }
+            wait_button_release(BTN_DN);
+        }
+
+        if (Btn_Pressed(BTN_UP)) {
+            uint32_t hold_ms = Btn_HoldMs(BTN_UP);
+            if (!sw_started && hold_ms >= HOLD_MS) {
+                menu_sw = 0;
+            } else if (!sw_started) {
+                sw_elapsed_ms = 0;
+                SSD1306_Print(0, 96, "CLR ");
+                SSD1306_Print(2, 0, "CLK start/stop");
+                draw_stopwatch_time(1, 28, 0);
+            }
+            force_refresh = true;
+        }
+
+        Delay_Ms(10);
     }
+
+    SSD1306_Clear();
 }
 
 static void MenuPage(uint8_t page)
