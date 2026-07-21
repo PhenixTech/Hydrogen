@@ -5,7 +5,10 @@
 #include <stdbool.h>
 
 void showMenu(void);
-
+void VLflagWarning(void);
+void LowBattery(void);
 extern bool force_refresh;
+
+
 
 #endif

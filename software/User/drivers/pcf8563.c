@@ -45,14 +45,21 @@ uint8_t PCF8563_GetTime(RTC_Time *t)
     return 0;
 }
 
-
-
 bool checkVL(void) 
 {
     uint8_t sec_reg = 0;
     if (I2C_ReadReg(PCF8563_ADDR, 0x02, &sec_reg) == 0 && (sec_reg & 0x80)) {
-        uint8_t VL = 1;
+        VL = true;
         return true;
     }
+    VL = false;
     return false;
+}
+
+void PCF8563_ClearVL(void)
+{
+    uint8_t sec_reg;
+    if (I2C_ReadReg(PCF8563_ADDR, 0x02, &sec_reg) == 0) {
+        I2C_WriteReg(PCF8563_ADDR, 0x02, sec_reg & 0x7F); // keep seconds, clear VL bit
+    }
 }

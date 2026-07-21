@@ -95,3 +95,12 @@ void SysTick_Handler(void) {
 }
 
 uint32_t millis(void) { return sys_ms; }
+
+bool checkLowBat() {
+    uint16_t adcv = ADC_GetConversionValue(ADC1);
+    adcv = (uint32_t)(1200 * 4095) / adcv;
+    if (adcv < 2500) {
+        return true;
+    }
+    else return false;
+}

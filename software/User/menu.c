@@ -1,5 +1,6 @@
 #include "ch32v00X.h"
 #include "drivers/ssd1306.h"
+#include "drivers/pcf8563.h"
 #include "ui.h"
 #include "button.h"
 #include "menu.h"
@@ -26,7 +27,9 @@ char buf[12];
 
 static void setclock(void) 
 {
-menu_rtc = 1;
+    menu_rtc = 1;
+    PCF8563_ClearVL();
+    VL = 0;
     SSD1306_Clear();
     SSD1306_Print(3, 20, "@@");
     while(menu_rtc) {
@@ -127,22 +130,22 @@ menu_rtc = 1;
             switch(time_sel)
                 {
                     case 0:
-                        new_hour = new_hour - 1;
+                        new_hour = (new_hour == 0) ? 23 : new_hour - 1;
                         Delay_Ms(150);
                         SSD1306_Print(2, 20, "  ");
                         break;
                     case 1:
-                        new_min = new_min - 1;
+                        new_min = (new_min == 0) ? 59 : new_min - 1;
                         Delay_Ms(50);
                         SSD1306_Print(2, 44, "  ");
                         break;
                     case 2: 
-                        new_date = new_date - 1;
+                        new_date = (new_date <= 1) ? 31 : new_date - 1;
                         Delay_Ms(50);
                         SSD1306_Print(2, 20, "  ");
                         break;
                     case 3 :
-                        new_month = new_month - 1;
+                        new_month = (new_month <= 1) ? 12 : new_month - 1;
                         Delay_Ms(150);
                         SSD1306_Print(2, 44, "  ");
                         break;
@@ -189,7 +192,7 @@ static void MenuPage(uint8_t page)
         case 1:
             u16_to_str(SystemCoreClock / 1000000, buf); 
             SSD1306_Print(3, 30, buf);
-            uint16_t adcv = ADC_GetConversionValue(ADC1) ;
+            uint16_t adcv = ADC_GetConversionValue(ADC1);
             adcv = (uint32_t)(1200 * 4095) / adcv;
             u16_to_str(adcv, buf);
             SSD1306_Print(3,90, buf);
@@ -201,8 +204,12 @@ static void MenuPage(uint8_t page)
         case 2:
             SSD1306_Print(0, 40, "EXIT MENU");
             SSD1306_Print(1, 40, "STOPWATCH");
+            SSD1306_Print(2, 40, "VL Flag");
             break;
         case 3:
+            SSD1306_Print(0, 40, "Low Battery");
+            break;            
+        case 4:
             SSD1306_Print(0,40, "Firmware");
             SSD1306_Print(1,40, "and Hardware");
             SSD1306_Print(2,40, "By PhenixTech");    
@@ -230,6 +237,31 @@ static void MoveCursor(int8_t dir)
 
 }
 
+void VLflagWarning()
+{
+    SSD1306_Clear();
+    SSD1306_DrawBitmap(0,70, bmp_warning, 12,12);
+    SSD1306_Print(0,20, "WARNING");
+    SSD1306_Print(1,20, "VL Flag");
+    SSD1306_Print(2,20, "has been set!");    
+    SSD1306_Print(3,20, "Change battery!");
+    while (!Btn_Pressed(BTN_CLK) && !Btn_Pressed(BTN_UP) && !Btn_Pressed(BTN_DN));
+    SSD1306_Clear();
+}
+
+void LowBattery()
+{
+    SSD1306_Clear();
+    SSD1306_DrawBitmap(1,90, bmp_warning, 12,12);
+    SSD1306_Print(0,20, "WARNING");
+    SSD1306_Print(1,20, "Low battery");
+    SSD1306_Print(2,20, "detected!");    
+    SSD1306_Print(3,20, "Change battery!");
+    while (!Btn_Pressed(BTN_CLK) && !Btn_Pressed(BTN_UP) && !Btn_Pressed(BTN_DN));
+    SSD1306_Clear();
+}
+
+
 void showMenu(void)
 {
     if(ismenu == 0) return;
@@ -256,9 +288,15 @@ void showMenu(void)
                     switch(cursor) {
                         case 0 : { SSD1306_Clear(); ismenu = 0; break; }
                         case 1 : { SSD1306_Clear(); stopwatch(); ismenu = 0; break; }
+                        case 2 : { VLflagWarning(); ismenu = 0; break;}
                     }
                     break;
+                case 3 :
+                    switch (cursor) {
+                        case 0 : { LowBattery(); ismenu = 0; break;}
+                    }
             }
         }
     }
 }
+

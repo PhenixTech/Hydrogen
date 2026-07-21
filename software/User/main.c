@@ -81,22 +81,26 @@ int main(void)
                 ismenu = 0;
             }
         } else {
-            // Display is off enter standby, wake on EXTI (PD6, button UP)
+            // Display is off enter standby, wake on EXTI (PD6, button CLK)
             Enter_Standby();
+            SystemCoreClockUpdate();
+            Delay_Init();
 
             // Woke up : measure hold duration
             uint32_t hold = Btn_HoldMs(BTN_CLK);
             if (hold >= HOLD_MS) {
                 // Long press : turn display on
                 I2C_Init_Bus();
+                InitializeADC();
                 SSD1306_On();
-                SystemCoreClockUpdate();
-                Delay_Init();
                 force_refresh = 1;
                 if (rtc_ok) {
                     PCF8563_GetTime(&now);
                     Draw_Clock(&now, &prev);
                 }
+                checkVL();
+                if (checkLowBat()) LowBattery();
+                if (VL == 1) VLflagWarning();
                 disp_on  = 1;
                 on_since = tick;
                 Blink(&PAT_OK);
