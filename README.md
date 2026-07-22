@@ -22,6 +22,19 @@ This is the first device in the **Hydrogen** line, part of the broader [PhenixTe
 
 ---
 
+## Menu / On-Device Tools
+ 
+Beyond the default clock screen, Hydrogen has a on menu navigated via the 3-way thumbwheel:
+ 
+- **Time / Clock** - set full RTC date and time (year included); flags invalid RTC state and guides you into setup
+- **Calendar** - simple calendar view
+- **Stopwatch** - stopwatch mode
+- **Battery** - battery voltage, with low/critical warnings on startup
+- **About** - credit, firmware compile date/time as a version marker
+Also supports alternate watch-face bitmaps/themes and a 2 display modes.
+
+---
+
 ## Hardware
 
 ### Block Diagram
@@ -59,10 +72,12 @@ CR2032
 
 ### Key Design Decisions
 
-- **Two-PCB approach** — main board + SSD1306 module daughter board with a 4 pin headers. V2 will integrate a bare OLED panel on a single PCB.
-- **BAT54 Schottky** — keeps the RTC domain isolated for the holdover cap.
-- **22µF holdover cap** — keeps the RTC alive for ~20 seconds during a battery swap, preserving time (also allow a clean shutdown).
-- **Debug interface** — three  pads (SWIO, GND, RST) with a 2.54mm pitch for WCH-LinkE programming.
+- **Two-PCB approach** :
+
+main board + SSD1306 module daughter board with a 4 pin headers. This is a cost saving feature, it also makes the board much simpler (4 pins trough hole instead of a 30 pin smd connector). V2 will integrate a bare OLED panel on a single PCB to make the device thinner, more reliable (the 4 pin header is a failure point when stressed), and more power efficent.
+- **BAT54 Schottky** - keeps the RTC domain isolated for the holdover cap.
+- **22µF holdover cap** - keeps the RTC alive for ~20 seconds during a battery swap, preserving time (also allow a clean shutdown).
+- **Debug interface** - three pads (SWIO, GND, RST) with a 2.54mm pitch for WCH-LinkE programming.
 
 <img src="images/Schematic_Hydrogen-1_2026-04-07.png" width="50%">
 
@@ -116,28 +131,20 @@ Designed in **EasyEDA**, fabricated by **JLCPCB**, components sourced from **Ali
 
 ---
 
-## Enclosure (planned)
-
-A two or three-part enclosure is in design:
-
-- **Back shell** — resin cast
-- **Front plate** — plastic with OLED window and LED cutout
-- **Optional** — magnetic swappable faceplate system
-
----
-
 ## Roadmap
 
-| Version | Status | Key Changes |
-|---|---|---|
-| **V1** | ✅ | Two-board stack, SSD1306 module |
-| **V2** | 🔲 Planning | Single PCB, bare OLED via FPC, MOSFET power gating, reverse polarity protection, optimized layout |
+
+**V1** - Finished - Two-board stack, SSD1306 module, current version
+
+**V2** - In Developement - Single PCB, bare OLED via FPC, optimized layout, extra battery life, and more ! Out before 2027 
 
 ---
 
 ## Project Naming
 
 Hydrogen is part of my own hardware ecosystem, where projects are named after elements and subatomic particles:
+
+Hydrogen being the lightest element, it is one of my simplest, most efficent project.
 
 - **Boron** — main handheld line (RP2350, ST7789 display)
 
