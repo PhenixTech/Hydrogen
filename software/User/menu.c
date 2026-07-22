@@ -23,6 +23,8 @@ uint8_t new_month = 1;
 int8_t cursor = 0;
 int8_t cursor_prev = 0;
 
+const char *fw_build = __DATE__ " " __TIME__;
+
 char buf[12];
 
 static void setclock(void) 
@@ -209,15 +211,18 @@ static void MenuPage(uint8_t page)
         case 3:
             SSD1306_Print(0, 40, "Low Battery");
             SSD1306_Print(1, 40, "Splash Screen");
+            SSD1306_Print(2, 40, "Calendar");
             break;            
         case 4:
             SSD1306_Print(0,40, "Firmware");
             SSD1306_Print(1,40, "and Hardware");
             SSD1306_Print(2,40, "By PhenixTech");    
+            SSD1306_Print(3,0, fw_build);
     }
 }
 
 #define pages_amount 4
+
 static void MoveCursor(int8_t dir)
 {
     cursor_prev = cursor;
@@ -240,16 +245,111 @@ static void MoveCursor(int8_t dir)
 
 }
 
+bool menu_cal = 0;
+ 
+static const char *dow_labels[7]   = {"Su","Mo","Tu","We","Th","Fr","Sa"};
+static const char *month_labels[12] = {"Jan","Feb","Mar","Apr","May","Jun",
+                                        "Jul","Aug","Sep","Oct","Nov","Dec"};
+
+static uint8_t DayOfWeek(uint16_t y, uint8_t m, uint8_t d)
+{
+    static const uint8_t t[] = {0,3,2,5,0,3,5,1,4,6,2,4};
+    if (m < 3) y -= 1;
+    return (y + y/4 - y/100 + y/400 + t[m-1] + d) % 7;
+}
+ 
+static uint8_t DaysInMonth(uint16_t y, uint8_t m)
+{
+    static const uint8_t dim[] = {31,28,31,30,31,30,31,31,30,31,30,31};
+    if (m == 2 && ((y % 4 == 0 && y % 100 != 0) || y % 400 == 0)) return 29;
+    return dim[m-1];
+}
+ 
+static void Draw_Calendar(uint8_t view_month, uint16_t view_year, RTC_Time *today)
+{
+    SSD1306_Clear();
+ 
+    char hdr[10];
+    uint8_t i = 0;
+    const char *mn = month_labels[view_month - 1];
+    while (mn[i]) { hdr[i] = mn[i]; i++; }
+    hdr[i++] = ' ';
+    char ybuf[6];
+    u16_to_str(view_year, ybuf);
+    for (uint8_t j = 0; ybuf[j]; j++) hdr[i++] = ybuf[j];
+    hdr[i] = '\0';
+    SSD1306_Print(0, 34, hdr);
+ 
+    for (uint8_t c = 0; c < 7; c++)
+        SSD1306_Print(1, 2 + c * 18, dow_labels[c]);
+ 
+    uint8_t first_dow = DayOfWeek(view_year, view_month, 1);
+    uint8_t days       = DaysInMonth(view_year, view_month);
+    bool this_month    = (view_month == today->month && view_year == today->year);
+ 
+    for (uint8_t d = 1; d <= days; d++) {
+        uint8_t cell  = first_dow + (d - 1);
+        uint8_t row   = cell / 7;
+        uint8_t col_i = cell % 7;
+        uint8_t p     = 2 + row;
+        uint8_t col   = 2 + col_i * 18;
+ 
+        u8_to_str(d, buf);
+        if (this_month && d == today->day)
+            SSD1306_PrintBoxed(p, col, 16, buf);
+        else
+            SSD1306_Print(p, col, buf);
+    }
+}
+ 
+static void calendar(void)
+{
+    RTC_Time today;
+    PCF8563_GetTime(&today);
+ 
+    uint8_t  view_month = today.month;
+    uint16_t view_year  = today.year;
+ 
+    // grid needs all 8 pages, force normal mode for the duration
+    bool was_legacy = legacy_mode;
+    if (legacy_mode) { legacy_mode = 0; SSD1306_Init(); }
+ 
+    menu_cal = 1;
+    Draw_Calendar(view_month, view_year, &today);
+ 
+    while (menu_cal) {
+        if (Btn_Pressed(BTN_DN)) {
+            if (++view_month > 12) { view_month = 1; view_year++; }
+            Draw_Calendar(view_month, view_year, &today);
+            Delay_Ms(250);
+        }
+        if (Btn_Pressed(BTN_UP)) {
+            if (view_month == 1) { view_month = 12; view_year--; }
+            else view_month--;
+            Draw_Calendar(view_month, view_year, &today);
+            Delay_Ms(250);
+        }
+        if (Btn_Pressed(BTN_CLK)) {
+            menu_cal = 0;
+            Delay_Ms(200);
+        }
+    }
+ 
+    if (was_legacy) { legacy_mode = 1; SSD1306_Init(); }
+    SSD1306_Clear();
+}
+
 void VLflagWarning()
 {
     SSD1306_Clear();
-    SSD1306_DrawBitmap(0,70, bmp_warning, 12,12);
+    SSD1306_DrawBitmap(0,90, bmp_warning, 12,12);
     SSD1306_Print(0,20, "WARNING");
-    SSD1306_Print(1,20, "VL Flag");
-    SSD1306_Print(2,20, "has been set!");    
-    SSD1306_Print(3,20, "Time Reset!");
+    SSD1306_Print(1,20, "RTC RESET!");
+    SSD1306_Print(2,20, "Set Time");    
+    SSD1306_Print(3,20, "And Date");
     while (!Btn_Pressed(BTN_CLK) && !Btn_Pressed(BTN_UP) && !Btn_Pressed(BTN_DN));
     SSD1306_Clear();
+    setclock();
 }
 
 void LowBattery(uint8_t level)
@@ -301,6 +401,7 @@ void showMenu(void)
                     switch (cursor) {
                         case 0 : { LowBattery(1); LowBattery(2); ismenu = 0; break;}
                         case 1 : { draw_splash(); ismenu = 0; break;}
+                        case 2 : { calendar(); ismenu = 0; break;}
                     }
             }
         }

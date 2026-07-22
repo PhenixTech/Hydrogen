@@ -153,3 +153,37 @@ void SSD1306_DrawBitmap(uint8_t page, uint8_t col, const uint8_t *bmp, uint8_t w
         }
     }
 }
+
+void SSD1306_PrintInv(uint8_t page, uint8_t col, const char *str)
+{
+    while (*str) {
+        uint8_t c = *str++;
+        if (c >= 'a' && c <= 'z') c -= 32;
+        if (c < 0x20 || c > 0x5A) c = 0x20;
+
+        SSD1306_Cmd(0xB0 + page);
+        SSD1306_Cmd(0x00 + (col & 0x0F));
+        SSD1306_Cmd(0x10 + (col >> 4));
+
+        const uint8_t *glyph = font5x7[c - 0x20];
+        for (uint8_t i = 0; i < 5; i++)
+            SSD1306_Data((uint8_t)~glyph[i]);
+        SSD1306_Data(0xFF); // keep the glyph gap part of the solid highlight
+
+        col += 6;
+        if (col >= 128) break;
+    }
+}
+
+void SSD1306_PrintBoxed(uint8_t page, uint8_t col, uint8_t box_w, const char *str)
+{
+    SSD1306_Cmd(0xB0 + page);
+    SSD1306_Cmd(0x00 + (col & 0x0F));
+    SSD1306_Cmd(0x10 + (col >> 4));
+    for (uint8_t i = 0; i < box_w; i++) SSD1306_Data(0xFF);
+
+    uint8_t text_w = 0;
+    for (const char *p = str; *p; p++) text_w += 6;
+    uint8_t text_col = col + (box_w > text_w ? (box_w - text_w) / 2 : 0);
+    SSD1306_PrintInv(page, text_col, str);
+}
