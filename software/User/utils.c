@@ -96,11 +96,23 @@ void SysTick_Handler(void) {
 
 uint32_t millis(void) { return sys_ms; }
 
-bool checkLowBat() {
+uint8_t checkLowBat() {
     uint16_t adcv = ADC_GetConversionValue(ADC1);
     adcv = (uint32_t)(1200 * 4095) / adcv;
-    if (adcv < 2500) {
-        return true;
-    }
-    else return false;
+    if (adcv < 2500) { return 1; }
+    if (adcv < 2300) { return 2; }
+    else return 0;
+}
+
+void draw_splash() {
+    Delay_Ms(300);
+    SSD1306_On();
+    SSD1306_Clear();
+    legacy_mode = 0;
+    SSD1306_Init();
+    SSD1306_DrawBitmap(0,0,splash_screen,128,64); 
+    Delay_Ms(2000); 
+    SSD1306_Clear();
+    legacy_mode = 1;
+    SSD1306_Init();
 }

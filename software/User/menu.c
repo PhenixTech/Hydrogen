@@ -208,6 +208,7 @@ static void MenuPage(uint8_t page)
             break;
         case 3:
             SSD1306_Print(0, 40, "Low Battery");
+            SSD1306_Print(1, 40, "Splash Screen");
             break;            
         case 4:
             SSD1306_Print(0,40, "Firmware");
@@ -215,21 +216,23 @@ static void MenuPage(uint8_t page)
             SSD1306_Print(2,40, "By PhenixTech");    
     }
 }
-    
+
+#define pages_amount 4
 static void MoveCursor(int8_t dir)
 {
     cursor_prev = cursor;
     cursor += dir ; 
-        if (cursor >= 3) { 
+        if (cursor >= pages_amount - 1) { 
             cursor = 0; // in legacy mode, there is 4 pages, normal mode get 8.
-            if (page == 0 || page > 2) page = 1;
+            if (page == 0 || page > pages_amount - 1) page = 0;
             page++ ;
             MenuPage(page); 
         } 
         if (cursor <= -1) {
             cursor = 0;
             page-- ;
-            if (page == 0 || page > 2) page = 1;
+            if (page > pages_amount - 1) page = 1;
+            if (page == 0) ismenu = 0;
             MenuPage(page);
         }
     SSD1306_Print(cursor_prev, 20, " ");
@@ -244,19 +247,22 @@ void VLflagWarning()
     SSD1306_Print(0,20, "WARNING");
     SSD1306_Print(1,20, "VL Flag");
     SSD1306_Print(2,20, "has been set!");    
-    SSD1306_Print(3,20, "Change battery!");
+    SSD1306_Print(3,20, "Time Reset!");
     while (!Btn_Pressed(BTN_CLK) && !Btn_Pressed(BTN_UP) && !Btn_Pressed(BTN_DN));
     SSD1306_Clear();
 }
 
-void LowBattery()
+void LowBattery(uint8_t level)
 {
+    if (level == 0) return;
+
     SSD1306_Clear();
     SSD1306_DrawBitmap(1,90, bmp_warning, 12,12);
     SSD1306_Print(0,20, "WARNING");
-    SSD1306_Print(1,20, "Low battery");
+    SSD1306_Print(1,20, level == 2 ? "Critical battery" : "Low Battery");
     SSD1306_Print(2,20, "detected!");    
     SSD1306_Print(3,20, "Change battery!");
+
     while (!Btn_Pressed(BTN_CLK) && !Btn_Pressed(BTN_UP) && !Btn_Pressed(BTN_DN));
     SSD1306_Clear();
 }
@@ -293,7 +299,8 @@ void showMenu(void)
                     break;
                 case 3 :
                     switch (cursor) {
-                        case 0 : { LowBattery(); ismenu = 0; break;}
+                        case 0 : { LowBattery(1); LowBattery(2); ismenu = 0; break;}
+                        case 1 : { draw_splash(); ismenu = 0; break;}
                     }
             }
         }

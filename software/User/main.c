@@ -43,10 +43,8 @@ int main(void)
 
     // Cold boot show display immediately without requiring hold
     if (oled_ok) {
-        Delay_Ms(500);
-        SSD1306_Clear();
+        draw_splash();
         force_refresh = true;
-        SSD1306_On();
         if (rtc_ok) {
             PCF8563_GetTime(&now);
             Draw_Clock(&now, &prev);
@@ -99,7 +97,7 @@ int main(void)
                     Draw_Clock(&now, &prev);
                 }
                 checkVL();
-                if (checkLowBat()) LowBattery();
+                LowBattery(checkLowBat());
                 if (VL == 1) VLflagWarning();
                 disp_on  = 1;
                 on_since = tick;
