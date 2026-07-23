@@ -24,7 +24,7 @@ This is the first device in the **Hydrogen** line, part of the broader [PhenixTe
 
 ## Menu / On-Device Tools
  
-Beyond the default clock screen, Hydrogen has a on menu navigated via the 3-way thumbwheel:
+Beyond the default clock screen, Hydrogen has a menu navigated via the 3-way thumbwheel:
  
 - **Time / Clock** - set full RTC date and time (year included); flags invalid RTC state and guides you into setup
 
@@ -131,7 +131,7 @@ Getting deep-sleep current down to ~60µA required manually shutting down periph
 **Entering sleep** (`Enter_Standby`):
 - OLED is turned off and the I²C bus is stopped
 - ADC is disabled, along with its peripheral clock
-- MCU enters standby via `PWR_EnterSTANDBYMode(WFE)`, woken by an EXTI (interupt) button event
+- MCU enters standby via `PWR_EnterSTANDBYMode(WFE)`, woken by an EXTI (interrupt) button event
 
 **Waking up**:
 - Execution resumes right after the standby call
@@ -145,7 +145,7 @@ Getting deep-sleep current down to ~60µA required manually shutting down periph
 | State | Current | Duration |
 |---|---|---|
 | Deep sleep (MCU + RTC) | 60uA | ~99% of time |
-| Active (OLED on, MCU running) | 8mA | 5s per wake |
+| Active (OLED on, MCU running) | 8mA | 3s per wake |
 | LED flash (low-battery) | ~500uA | brief pulse |
 
 *Estimated battery life: **~6 months** on a standard CR2032 (225mAh).*
