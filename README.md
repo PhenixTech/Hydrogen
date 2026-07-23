@@ -7,7 +7,7 @@
 ![MCU](https://img.shields.io/badge/MCU-CH32V006-green?style=plastic)
 ![Architecture](https://img.shields.io/badge/RISC--V-QingKe_V2C-red?style=plastic)
 
-<img src="images/PCB-3D-TOP.png" width="25%"> <img src="images/IRL-ON.jpg" width="25%"> <img src="images/IRL-BK.jpg" width="25%">
+<img src="images/PCB-3D-TOP.png" width="25%"> <img src="images/IRL-ON.jpg" width="25%"> <img src="images/IRL-BK.jpg" width="25%"> 
 
 ---
 
@@ -27,11 +27,32 @@ This is the first device in the **Hydrogen** line, part of the broader [PhenixTe
 Beyond the default clock screen, Hydrogen has a on menu navigated via the 3-way thumbwheel:
  
 - **Time / Clock** - set full RTC date and time (year included); flags invalid RTC state and guides you into setup
+
+  <img src="images/screenshot/menu_page1_legacy.png" width="25%">
+
+
 - **Calendar** - simple calendar view
+
+  <img src="images/screenshot/calendar.png" width="25%">
+  
 - **Stopwatch** - stopwatch mode
+
+  <img src="images/screenshot/menu_page2_legacy.png" width="25%">
+
 - **Battery** - battery voltage, with low/critical warnings on startup
+
+    <img src="images/screenshot/low_battery_legacy.png" width="25%">
+
 - **About** - credit, firmware compile date/time as a version marker
-Also supports alternate watch-face bitmaps, themes, and 2 display modes.
+  
+   <img src="images/screenshot/menu_page4_legacy.png" width="25%">
+
+Also supports alternate watch-face bitmaps, themes, and 2 display modes:
+
+| Regular | Legacy |
+|---|---|
+| <img src="images/screenshot/clock.png"> | <img src="images/screenshot/clock_legacy.png"> |
+> Legacy mode is a happy accident: an early firmware bug set the display init to 128x32 instead of 128x64, giving it a distinct stretched-out, scan-line look. Kept around for the aesthetic, though it'll eventually be phased out.
 
 ---
 
