@@ -3,6 +3,8 @@
 #include "i2c.h"
 #include "ui.h"
 #include "utils.h"
+#include "button.h"
+#include "states.h"
 
 // EXTI (interupt) wake on PD6 (click)
 void EXTI_Wake_Init(void)
@@ -115,4 +117,32 @@ void draw_splash() {
     SSD1306_Clear();
     legacy_mode = 1;
     SSD1306_Init();
+}
+
+void VLflagWarning()
+{
+    SSD1306_Clear();
+    SSD1306_DrawBitmap(0,90, bmp_warning, 12,12);
+    SSD1306_Print(0,20, "WARNING");
+    SSD1306_Print(1,20, "RTC RESET!");
+    SSD1306_Print(2,20, "Set Time");    
+    SSD1306_Print(3,20, "And Date");
+    while (!Btn_Pressed(BTN_CLK) && !Btn_Pressed(BTN_UP) && !Btn_Pressed(BTN_DN));
+    SSD1306_Clear();
+    setclock();
+}
+
+void LowBattery(uint8_t level)
+{
+    if (level == 0) return;
+
+    SSD1306_Clear();
+    SSD1306_DrawBitmap(1,90, bmp_warning, 12,12);
+    SSD1306_Print(0,20, "WARNING");
+    SSD1306_Print(1,20, level == 2 ? "Critical battery" : "Low Battery");
+    SSD1306_Print(2,20, "detected!");    
+    SSD1306_Print(3,20, "Change battery!");
+
+    while (!Btn_Pressed(BTN_CLK) && !Btn_Pressed(BTN_UP) && !Btn_Pressed(BTN_DN));
+    SSD1306_Clear();
 }
