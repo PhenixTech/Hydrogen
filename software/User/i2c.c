@@ -100,6 +100,39 @@ uint8_t I2C_WriteReg(uint8_t addr, uint8_t reg, uint8_t val)
     return 0;
 }
 
+uint8_t I2C_WriteBurst(uint8_t addr, uint8_t reg, const uint8_t *buf, uint16_t len)
+{
+    uint32_t t;
+    t = I2C_TIMEOUT;
+    while (I2C_GetFlagStatus(I2C1, I2C_FLAG_BUSY) && --t);
+    if (!t) return 1;
+
+    I2C_GenerateSTART(I2C1, ENABLE);
+    t = I2C_TIMEOUT;
+    while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT) && --t);
+    if (!t) return 1;
+
+    I2C_Send7bitAddress(I2C1, addr << 1, I2C_Direction_Transmitter);
+    t = I2C_TIMEOUT;
+    while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && --t);
+    if (!t) return 1;
+
+    I2C_SendData(I2C1, reg);
+    t = I2C_TIMEOUT;
+    while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && --t);
+    if (!t) return 1;
+
+    for (uint16_t i = 0; i < len; i++) {
+        I2C_SendData(I2C1, buf[i]);
+        t = I2C_TIMEOUT;
+        while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && --t);
+        if (!t) return 1;
+    }
+
+    I2C_GenerateSTOP(I2C1, ENABLE);
+    return 0;
+}
+
 uint8_t I2C_ReadReg(uint8_t addr, uint8_t reg, uint8_t *out)
 {
     uint32_t t;

@@ -187,3 +187,68 @@ void SSD1306_PrintBoxed(uint8_t page, uint8_t col, uint8_t box_w, const char *st
     uint8_t text_col = col + (box_w > text_w ? (box_w - text_w) / 2 : 0);
     SSD1306_PrintInv(page, text_col, str);
 }
+
+#define FB_WIDTH  128
+#define FB_PAGES  8
+#define FB_SIZE   (FB_WIDTH * FB_PAGES)
+
+static uint8_t framebuffer[FB_SIZE];
+
+void FB_Clear(void)
+{
+    for (uint16_t i = 0; i < FB_SIZE; i++) framebuffer[i] = 0x00;
+}
+
+void FB_SetPixel(uint8_t x, uint8_t y, uint8_t on)
+{
+    if (x >= FB_WIDTH || y >= 64) return;
+    uint16_t idx = (y >> 3) * FB_WIDTH + x;
+    uint8_t bit = 1 << (y & 7);
+    if (on) framebuffer[idx] |= bit;
+    else    framebuffer[idx] &= ~bit;
+}
+
+void FB_DrawBitmap(uint8_t page, uint8_t col, const uint8_t *bmp, uint8_t width, uint8_t height)
+{
+    uint8_t pages = (height + 7) / 8;
+    for (uint8_t p = 0; p < pages; p++) {
+        if (page + p >= FB_PAGES) break;
+        for (uint8_t x = 0; x < width; x++) {
+            if (col + x >= FB_WIDTH) break;
+            framebuffer[(page + p) * FB_WIDTH + (col + x)] = bmp[p * width + x];
+        }
+    }
+}
+
+void FB_Print(uint8_t page, uint8_t col, const char *str)
+{
+    while (*str) {
+        uint8_t c = *str++;
+        if (c >= 'a' && c <= 'z') c -= 32;
+        if (c < 0x20 || c > 0x5A) c = 0x20;
+        if (page >= FB_PAGES) return;
+
+        const uint8_t *glyph = font5x7[c - 0x20];
+        for (uint8_t i = 0; i < 5 && col + i < FB_WIDTH; i++)
+            framebuffer[page * FB_WIDTH + col + i] = glyph[i];
+        if (col + 5 < FB_WIDTH)
+            framebuffer[page * FB_WIDTH + col + 5] = 0x00;
+
+        col += 6;
+        if (col >= FB_WIDTH) break;
+    }
+}
+
+void FB_Update(void)
+{
+    SSD1306_Cmd(0x21); SSD1306_Cmd(0x00); SSD1306_Cmd(0x7F); // col range full width
+    SSD1306_Cmd(0x22); SSD1306_Cmd(0x00); SSD1306_Cmd(0x07); // page range full height
+    I2C_WriteBurst(SSD1306_ADDR, 0x40, framebuffer, FB_SIZE);
+}
+
+void FB_HLine(uint8_t page, uint8_t pattern)
+{
+    if (page >= FB_PAGES) return;
+    for (uint8_t col = 0; col < FB_WIDTH; col++)
+    framebuffer[page * FB_WIDTH + col] = pattern;
+}

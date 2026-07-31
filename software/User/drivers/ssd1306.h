@@ -12,6 +12,13 @@ void SSD1306_DrawBitmap(uint8_t page, uint8_t col, const uint8_t *bmp, uint8_t w
 void SSD1306_PrintInv(uint8_t page, uint8_t col, const char *str);
 void SSD1306_PrintBoxed(uint8_t page, uint8_t col, uint8_t box_w, const char *str);
 
+void FB_Clear(void);
+void FB_SetPixel(uint8_t x, uint8_t y, uint8_t on);
+void FB_DrawBitmap(uint8_t page, uint8_t col, const uint8_t *bmp, uint8_t width, uint8_t height);
+void FB_Print(uint8_t page, uint8_t col, const char *str);
+void FB_Update(void);
+void FB_HLine(uint8_t page, uint8_t pattern);
+
 
 uint8_t SSD1306_Cmd(uint8_t cmd);  
 uint8_t SSD1306_Data(uint8_t dat); 

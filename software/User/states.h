@@ -7,5 +7,7 @@
 void setclock(void);
 void stopwatch(void);
 void calendar(void);
+void bright_menu(void);
+
 
 #endif

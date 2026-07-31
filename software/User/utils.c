@@ -61,6 +61,14 @@ void InitializeADC()
      ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 }
 
+void SysTick_Stop(void)
+{
+      SysTick->CTLR = 0;                  // stop counter and interrupt
+      SysTick->SR &= ~(1u << 0);          // clear compare flag
+      NVIC_ClearPendingIRQ(SysTick_IRQn);
+}
+
+
 // Deep sleep 
 void Enter_Standby(void)
 {
@@ -73,6 +81,7 @@ void Enter_Standby(void)
     ADC_Cmd(ADC1, DISABLE);
     RCC_PB2PeriphClockCmd(RCC_PB2Periph_ADC1, DISABLE);
 
+    SysTick_Stop();
     // Standby mode, wakes from EXTI
     PWR_EnterSTANDBYMode(PWR_STANDBYEntry_WFE);
 
@@ -101,48 +110,53 @@ uint32_t millis(void) { return sys_ms; }
 uint8_t checkLowBat() {
     uint16_t adcv = ADC_GetConversionValue(ADC1);
     adcv = (uint32_t)(1200 * 4095) / adcv;
-    if (adcv < 2500) { return 1; }
     if (adcv < 2300) { return 2; }
+    if (adcv < 2500) { return 1; }
     else return 0;
 }
 
 void draw_splash() {
     Delay_Ms(300);
     SSD1306_On();
-    SSD1306_Clear();
+    FB_Clear();
     legacy_mode = 0;
     SSD1306_Init();
-    SSD1306_DrawBitmap(0,0,splash_screen,128,64); 
+    FB_DrawBitmap(0,0,splash_screen,128,64); 
+    FB_Update();
     Delay_Ms(2000); 
-    SSD1306_Clear();
+    FB_Clear();
     legacy_mode = 1;
     SSD1306_Init();
+    FB_Update();
 }
 
 void VLflagWarning()
 {
-    SSD1306_Clear();
-    SSD1306_DrawBitmap(0,90, bmp_warning, 12,12);
-    SSD1306_Print(0,20, "WARNING");
-    SSD1306_Print(1,20, "RTC RESET!");
-    SSD1306_Print(2,20, "Set Time");    
-    SSD1306_Print(3,20, "And Date");
+    FB_Clear();
+    FB_DrawBitmap(0,90, bmp_warning, 12,12);
+    FB_Print(0,20, "WARNING");
+    FB_Print(1,20, "RTC RESET!");
+    FB_Print(2,20, "Set Time");    
+    FB_Print(3,20, "And Date");
+    FB_Update();
     while (!Btn_Pressed(BTN_CLK) && !Btn_Pressed(BTN_UP) && !Btn_Pressed(BTN_DN));
-    SSD1306_Clear();
+    FB_Clear();
+    FB_Update();
     setclock();
 }
 
 void LowBattery(uint8_t level)
 {
     if (level == 0) return;
-
-    SSD1306_Clear();
-    SSD1306_DrawBitmap(1,90, bmp_warning, 12,12);
-    SSD1306_Print(0,20, "WARNING");
-    SSD1306_Print(1,20, level == 2 ? "Critical battery" : "Low Battery");
-    SSD1306_Print(2,20, "detected!");    
-    SSD1306_Print(3,20, "Change battery!");
-
+    FB_Clear();
+    FB_DrawBitmap(1,90, bmp_warning, 12,12);
+    FB_Print(0,20, "WARNING");
+    FB_Print(1,20, level == 2 ? "Critical battery" : "Low Battery");
+    FB_Print(2,20, "detected!");    
+    FB_Print(3,20, "Change battery!");
+    FB_Update();
     while (!Btn_Pressed(BTN_CLK) && !Btn_Pressed(BTN_UP) && !Btn_Pressed(BTN_DN));
-    SSD1306_Clear();
+    FB_Clear();
+    FB_Update();
+
 }

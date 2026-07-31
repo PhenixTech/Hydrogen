@@ -62,14 +62,6 @@ void Blink(const Pattern *p)
 
 // ui part
 
-static void SSD1306_HLine(uint8_t page, uint8_t pattern)
-{
-    SSD1306_Cmd(0xB0 + page);
-    SSD1306_Cmd(0x00); SSD1306_Cmd(0x10);
-    for (uint8_t col = 0; col < 128; col++)
-        SSD1306_Data(pattern);
-}
-
 
 void Draw_Clock(RTC_Time *now, RTC_Time *prev)
 {
@@ -78,62 +70,62 @@ void Draw_Clock(RTC_Time *now, RTC_Time *prev)
 
         if (themes[current_theme].bmp != NULL || !themedrawn) {
         themedrawn = true;
-        SSD1306_DrawBitmap(themes[current_theme].bmp_page, themes[current_theme].bmp_col, themes[current_theme].bmp, themes[current_theme].bmp_w, themes[current_theme].bmp_h);
+        FB_DrawBitmap(themes[current_theme].bmp_page, themes[current_theme].bmp_col, themes[current_theme].bmp, themes[current_theme].bmp_w, themes[current_theme].bmp_h);
     }
 
     if (now->day != prev->day || now->month != prev->month || now->year != prev->year || force_refresh) {
         u8_to_str(now->day,   buf);     buf[2] = '/';
         u8_to_str(now->month, buf+3);   buf[5] = '/';
         u16_to_str(now->year, buf+6);   buf[10] = '\0';
-        SSD1306_Print(t->date_page, t->date_col, buf);
-        SSD1306_HLine(1, 0x08);
+        FB_Print(t->date_page, t->date_col, buf);
+        FB_HLine(1, 0x08);
     }
 
     if (now->hour != prev->hour || force_refresh) {
         u8_to_str(now->hour, buf);
-        SSD1306_Print(t->hour_page, t->hour_col, buf);
+        FB_Print(t->hour_page, t->hour_col, buf);
     }
 
     if (now->min != prev->min || force_refresh) {
         u8_to_str(now->min, buf);
-        SSD1306_Print(t->min_page, t->min_col, buf);
+        FB_Print(t->min_page, t->min_col, buf);
     }
 
     if (t->show_sec) {
         u8_to_str(now->sec, buf);
-        SSD1306_Print(t->sec_page, t->sec_col, buf);
+        FB_Print(t->sec_page, t->sec_col, buf);
     }
 
     if (force_refresh) {
-        SSD1306_Print(t->colon1_page, t->colon1_col, ":");
-        SSD1306_Print(t->colon2_page, t->colon2_col, ":");
+        FB_Print(t->colon1_page, t->colon1_col, ":");
+        FB_Print(t->colon2_page, t->colon2_col, ":");
+        FB_Update();
     }
 
+    FB_Update();
     *prev = *now;
 }
 
 void Draw_Inputs(void)
 {
-    // Clear row 3
-    SSD1306_Cmd(0xB0 + 3);
-    SSD1306_Cmd(0x00); SSD1306_Cmd(0x10);
-    for (uint8_t i = 0; i < 128; i++) SSD1306_Data(0x00);
-
+    FB_Print(3,  0, "                     ");
+    FB_Update();
     if (Btn_Pressed(BTN_UP))  {
         Blink(&PAT_OK);
-        SSD1306_Print(3,  0, "UP");
+        FB_Print(3,  0, "UP");
         ismenu = 1;
     }
     if (Btn_Pressed(BTN_DN)) {
-    SSD1306_Print(3, 50, "DN");
+    FB_Print(3, 50, "DN");
     devmode = 0;
-    SSD1306_Print(0, 80, "        ");
+    FB_Print(0, 80, "        ");
     } 
 
     if (Btn_Pressed(BTN_CLK)) {
-        SSD1306_Print(3, 98, "CLK");
+        FB_Print(3, 98, "CLK");
         devmode = 1;
     }
-    if (devmode) SSD1306_Print(0, 80, "devmode");
+    if (devmode) FB_Print(0, 80, "devmode");
+    FB_Update();
 }
 

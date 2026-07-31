@@ -32,62 +32,66 @@ void setclock(void)
     menu_rtc = 1;
     PCF8563_ClearVL();
     VL = 0;
-    SSD1306_Clear();
-    SSD1306_Print(3, 20, "@@");
+    FB_Clear();
+    FB_Print(3, 20, "@@");
+    FB_Update();
     while(menu_rtc) {
-    // .date_page = 0 .date_col = 14
         if (new_hour > 23) new_hour = 0;
         if (new_min > 59) new_min = 0;
         if (new_date > 31) new_date = 1;
         if (new_month > 12) new_month = 1;
 
         u8_to_str(new_min, buf);
-        SSD1306_Print(2, 44, buf);
+        FB_Print(2, 44, buf);
 
         u8_to_str(new_hour, buf);
-        SSD1306_Print(2, 20, buf);
+        FB_Print(2, 20, buf);
 
         u8_to_str(new_date, buf);
-        SSD1306_Print(0, 20, buf);
+        FB_Print(0, 20, buf);
 
         u8_to_str(new_month, buf);
-        SSD1306_Print(0, 40, buf);
+        FB_Print(0, 40, buf);
 
         u16_to_str(new_year, buf);
-        SSD1306_Print(0, 60, buf);
-        SSD1306_Print(2, 38, ":");
-        SSD1306_Print(0, 32, "/");
-        SSD1306_Print(0, 54, "/");
+        FB_Print(0, 60, buf);
+        FB_Print(2, 38, ":");
+        FB_Print(0, 32, "/");
+        FB_Print(0, 54, "/");
+        FB_Update();
 
         if(Btn_Pressed(BTN_CLK)) {
             time_sel = time_sel + 1;
             switch(time_sel) 
             {
                 case 1:
-                SSD1306_Print(3, 20, "  ");
-                SSD1306_Print(3, 44, "@@");
+                FB_Print(3, 20, "  ");
+                FB_Print(3, 44, "@@");
                 break;
                 case 2:
-                SSD1306_Print(3, 44, "  ");
-                SSD1306_Print(1, 20, "@@");
+                FB_Print(3, 44, "  ");
+                FB_Print(1, 20, "@@");
                 break;
                 case 3:
-                SSD1306_Print(1, 20, "  ");
-                SSD1306_Print(1, 40, "@@");
+                FB_Print(1, 20, "  ");
+                FB_Print(1, 40, "@@");
                 break;
                 case 4:
-                SSD1306_Print(1, 40, "  ");
-                SSD1306_Print(1, 60, "@@@@");
+                FB_Print(1, 40, "  ");
+                FB_Print(1, 60, "@@@@");
                 break;
             }
+            FB_Update();
             if(time_sel >= 5) {
                 RTC_Time set = { .sec=0, .min=new_min, .hour=new_hour, .day=new_date, .month=new_month, .year=new_year };
                 PCF8563_SetTime(&set);
                 time_sel = 0;
-                SSD1306_Clear();
-                SSD1306_Print(1, 50, "time set !");
+                FB_Clear();
+                FB_Print(1, 50, "time set !");
+                FB_Update();
                 Delay_Ms(500);
-                SSD1306_Clear(); 
+                FB_Clear();
+                FB_Update(); 
                 menu_rtc = 0;
                 force_refresh = 1;
                 }
@@ -96,92 +100,126 @@ void setclock(void)
 
         if (Btn_Pressed(BTN_UP)) 
         { 
+            FB_Update();
             switch(time_sel)
                 {
                     case 0:
                         new_hour = new_hour + 1;
-                        Delay_Ms(150);
-                        SSD1306_Print(2, 20, "  ");
+                        FB_Print(2, 20, "  ");
                         break;
                     case 1:
                         new_min = new_min + 1;
-                        Delay_Ms(50);
-                        SSD1306_Print(2, 44, "  ");
+                        FB_Print(2, 44, "  ");
                         break;
                     case 2: 
                         new_date = new_date + 1;
-                        Delay_Ms(50);
-                        SSD1306_Print(2, 20, "  ");
+                        FB_Print(2, 20, "  ");
                         break;
                     case 3 :
                         new_month = new_month + 1;
-                        Delay_Ms(150);
-                        SSD1306_Print(2, 44, "  ");
+                        FB_Print(2, 44, "  ");
                         break;
                     case 4 :
                         new_year = new_year + 1;
-                        Delay_Ms(200);
-                        SSD1306_Print(2, 60, "    ");
+                        FB_Print(2, 60, "    ");
                         break;
-                    }
-
+                }
         }
 
-                if (Btn_Pressed(BTN_DN)) 
+        if (Btn_Pressed(BTN_DN)) 
         { 
+            FB_Update();
             switch(time_sel)
                 {
                     case 0:
                         new_hour = (new_hour == 0) ? 23 : new_hour - 1;
-                        Delay_Ms(150);
-                        SSD1306_Print(2, 20, "  ");
+                        FB_Print(2, 20, "  ");
                         break;
                     case 1:
                         new_min = (new_min == 0) ? 59 : new_min - 1;
-                        Delay_Ms(50);
-                        SSD1306_Print(2, 44, "  ");
+                        FB_Print(2, 44, "  ");
                         break;
                     case 2: 
                         new_date = (new_date <= 1) ? 31 : new_date - 1;
-                        Delay_Ms(50);
-                        SSD1306_Print(2, 20, "  ");
+                        FB_Print(2, 20, "  ");
                         break;
                     case 3 :
                         new_month = (new_month <= 1) ? 12 : new_month - 1;
-                        Delay_Ms(150);
-                        SSD1306_Print(2, 44, "  ");
+                        FB_Print(2, 44, "  ");
                         break;
                     case 4 :
                         new_year = new_year - 1;
-                        Delay_Ms(200);
-                        SSD1306_Print(2, 60, "    ");
+                        FB_Print(2, 60, "    ");
                         break;
                 }
-            }
         }
+
+    }
 }
 
 bool sw_started = false;
 bool menu_sw = 0;
 
+static uint32_t sw_start_ms = 0;
+static uint32_t sw_elapsed  = 0;
+
 void stopwatch(void)
 {
     menu_sw = 1;
-    while(menu_sw)  {
-        uint32_t sw_start_ms = 0;
-        uint32_t sw_elapsed  = 0;
-        sw_start_ms = millis();
-        sw_elapsed = millis() - sw_start_ms;
+    sw_elapsed = 0;
+
+    while (menu_sw) {
+        if (sw_started) {
+            sw_elapsed = millis() - sw_start_ms;
+        }
+
         uint8_t sec  = (sw_elapsed / 1000) % 60;
         uint8_t mins = (sw_elapsed / 60000) % 60;
-        u8_to_str(mins, buf); SSD1306_Print(0, 20, buf);
-        SSD1306_Print(0, 32, ":");
-        u8_to_str(sec, buf);  SSD1306_Print(0, 38, buf);
-    if (Btn_Pressed(BTN_UP)) { if (sw_started == 0) {SSD1306_Print(2,20, "cleared"); Delay_Ms(200); SSD1306_Print(2,20, "       "); Delay_Ms(300);} } 
-    if (Btn_Pressed(BTN_DN)) { if (sw_started == 1) {SSD1306_Print(1,20, "new lap"); Delay_Ms(200); SSD1306_Print(1,20, "       "); Delay_Ms(300); } }
-    if (Btn_Pressed(BTN_CLK)) { if (sw_started == 0) { SSD1306_Print(0,20, "Watch started"); sw_started = 1; Delay_Ms(300);}
-                                else { sw_started = 0; SSD1306_Print(0, 20,"              "); } Delay_Ms(300);}
-    if (Btn_HoldMs(BTN_UP)) { if (sw_started == 0) { menu_sw = 0;} }
+
+        FB_Clear();
+        u8_to_str(mins, buf);
+        FB_Print(0, 20, buf);
+        FB_Print(0, 32, ":");
+        u8_to_str(sec, buf);
+        FB_Print(0, 38, buf);
+
+        if (Btn_Pressed(BTN_UP)) {
+            if (sw_started == 0) {
+                sw_elapsed = 0;
+                FB_Print(2, 20, "cleared");
+                FB_Update();
+                Delay_Ms(200);
+            }
+        }
+
+        if (Btn_Pressed(BTN_DN)) {
+            if (sw_started == 1) {
+                FB_Print(1, 20, "new lap");
+                FB_Update();
+                Delay_Ms(200);
+            }
+        }
+
+        if (Btn_Pressed(BTN_CLK)) {
+            if (sw_started == 0) {
+                sw_start_ms = millis() - sw_elapsed;
+                sw_started = 1;
+                FB_Print(0, 20, "Watch started");
+                FB_Update();
+                Delay_Ms(300);
+            } else {
+                sw_started = 0;
+            }
+            Delay_Ms(300);
+        }
+
+        FB_Update();
+
+        if (Btn_HoldMs(BTN_UP)) {
+            if (sw_started == 0) {
+                menu_sw = 0;
+            }
+        }
     }
 }
 
@@ -271,4 +309,40 @@ void calendar(void)
  
     if (was_legacy) { legacy_mode = 1; SSD1306_Init(); }
     SSD1306_Clear();
+}
+
+bool brightmenu = 0;
+uint8_t brightness = 153;
+
+void bright_menu()
+{
+    FB_Clear();
+    brightmenu = 1;
+    FB_Print(0,0,"brightness menu");
+    while (brightmenu)
+    {
+        u8_to_str(brightness, buf);
+        FB_Print(1,30, buf);
+        FB_Update();
+        if(Btn_Pressed(BTN_UP)) {
+            brightness++;
+            Delay_Ms(100);
+            SSD1306_Cmd(0x81);
+            SSD1306_Cmd(brightness);
+            FB_Print(1,30, "     ");
+        }
+        if(Btn_Pressed(BTN_DN)) {
+            brightness--;
+            Delay_Ms(100);
+            SSD1306_Cmd(0x81);
+            SSD1306_Cmd(brightness);
+            FB_Print(1,30, "     ");
+
+        }
+        if(Btn_Pressed(BTN_CLK)) {
+            FB_Clear();
+            brightmenu = 0;
+        }
+    }
+
 }

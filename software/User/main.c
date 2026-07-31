@@ -18,6 +18,7 @@ int main(void)
 {
     SystemCoreClockUpdate();
     Delay_Init();
+    SysTick_Init();
     LED_Init();
     InitializeADC();
     Buttons_Init();
@@ -90,6 +91,7 @@ int main(void)
                 // Long press : turn display on
                 I2C_Init_Bus();
                 InitializeADC();
+                SysTick_Init();
                 SSD1306_On();
                 force_refresh = 1;
                 if (rtc_ok) {
