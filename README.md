@@ -12,11 +12,21 @@
 ---
 
 
-## Try the firmware on Linux
+## Try the firmware in your browser
+
+You can try the Hydrogen firmware directly in your browser, with no board or setup required.
+
+[Open the web simulator](https://phenixtech.fr/hydrogen/web)
+
+Use the arrow keys for the thumbwheel directions, Space or Enter to click, and Escape to quit.
+
+## Try the firmware on Linux or Windows
 
 Hydrogen firmware can now be compiled and run as a desktop simulator, no board required. From the firmware directory, run this file
 
 software/sim/compile-and-launch.sh
+
+Alternatively, you can download the precompiled simulator from the Releases page.
 
 Use the arrow keys for the thumbwheel directions, Space or Enter to click, and Escape to quit. Linux is currently supported; macOS and Windows may work with SDL2 and the required build tools installed, but are untested.
 
