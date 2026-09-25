@@ -12,6 +12,19 @@
 ---
 
 
+## Try the firmware on Linux
+
+Hydrogen firmware can now be compiled and run as a desktop simulator, no board required. From the firmware directory, run this file
+
+software/sim/compile-and-launch.sh
+
+Use the arrow keys for the thumbwheel directions, Space or Enter to click, and Escape to quit. Linux is currently supported; macOS and Windows may work with SDL2 and the required build tools installed, but are untested.
+
+The simulator was made with Codex because this kind of software work is beyond my current skills, apologies for this, but I wanted people to be able to try Hydrogen more easily.
+
+---
+
+
 ## Overview
 
 ![BANNER](images/BANNER.png)
